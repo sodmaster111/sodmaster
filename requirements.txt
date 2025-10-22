@@ -1,7 +1,8 @@
 fastapi
 uvicorn[standard]
-microsoft-agent-framework  # Пакет для MAF, который объединяет AutoGen и Semantic Kernel [cite: 369, 871]
-crewai                     # Для тактических департаментов [cite: 372, 570, 789]
-openrouter-client          # Официальный Python-клиент для OpenRouter.ai [cite: 714]
-web3                       # Для взаимодействия с блокчейном [cite: 607, 671]
-btcpay-python              # Официальный Python-клиент для BTCPay Server [cite: 596-599]
+pyautogen
+semantic-kernel
+crewai
+openrouter-client
+web3
+btcpay
