@@ -1,5 +1,11 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
+import os
+
+# Импорт наших новых Департаментов (Crews)
+from agents.cgo_crew import cgo_crew
+from agents.cto_crew import cto_crew
+
 # from microsoft_agent_framework import Workflow, Agent  # Заглушка: импортируй реальные классы MAF
 
 # Инициализация MAF C-Suite (Заглушки)
@@ -15,36 +21,72 @@ from fastapi import FastAPI
 # coo_workflow = Workflow(name="COO-AI", definition="api_gateway_manager")
 
 app = FastAPI(
-    title="Sodmaster C-unit (MAF Gateway)",
-    description="Внутренний A2A (Agent-to-Agent) API-шлюз. Управляется COO-AI (MAF) для делегирования задач департаментам CrewAI. "
+    title="Sodmaster C-unit (MAF Gateway v2.0)",
+    description="Внутренний A2A (Agent-to-Agent) API-шлюз. Управляется COO-AI (MAF) для делегирования задач департаментам CrewAI."
 )
 
+# --- КЭШ РЕЗУЛЬТАТОВ (Временная Память) ---
+task_results = {}
+
+
+# --- ФОНОВЫЕ ЗАДАЧИ (Чтобы API отвечал мгновенно) ---
+def run_crew_task(crew, task_id: str, inputs: dict):
+    """Запускает Crew в фоновом режиме."""
+    try:
+        result = crew.kickoff(inputs=inputs)
+        task_results[task_id] = {"status": "complete", "result": result}
+    except Exception as e:
+        task_results[task_id] = {"status": "error", "message": str(e)}
+
+
+# --- ОСНОВНЫЕ ЭНДПОИНТЫ API ---
 
 @app.get("/")
 def read_root():
-    return {"status": "Sodmaster C-Unit MAF Gateway is online. Awaiting directives."}
+    # Проверка, что API-ключи загружены
+    openrouter_key = os.environ.get("OPENROUTER_API_KEY", "NOT_SET")
+    leonardo_key = os.environ.get("LEONARDO_API_KEY", "NOT_SET")
+    return {
+        "status": "Sodmaster C-Unit MAF Gateway is online.",
+        "openrouter_status": "LOADED" if openrouter_key != "NOT_SET" else "MISSING",
+        "leonardo_status": "LOADED" if leonardo_key != "NOT_SET" else "MISSING"
+    }
 
 
-@app.post("/api/v1/delegate-task")
-async def delegate_task(task_request: dict):
+@app.post("/api/v1/cgo/run-marketing-campaign")
+async def run_cgo_task(background_tasks: BackgroundTasks):
     """
-    Принимает задачу от Sodmaster или другого C-Unit и маршрутизирует ее
-    в соответствующий MAF Workflow для исполнения.
+    Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI).
     """
-    c_unit_id = task_request.get("c_unit")
-    task_description = task_request.get("task")
+    task_id = "cgo_task_latest"
+    task_results[task_id] = {"status": "running"}
 
-    # Заглушка: Логика маршрутизации задач
-    # В будущем здесь будет вызов MAF Workflow
-    print(f"Получена задача для {c_unit_id}: {task_description}")
+    # Запускаем Crew в фоне, чтобы API мгновенно отдал ответ
+    background_tasks.add_task(run_crew_task, cgo_crew, task_id, {})
 
-    task_id = f"task_{hash(task_description)}"
+    return {"status": "CGO Crew Task Started", "task_id": task_id}
 
-    # if c_unit_id == "CTO-AI":
-    #    cto_workflow.run(task_description)
-    # ...
 
-    return {"status": "Task delegated", "c_unit": c_unit_id, "task_id": task_id}
+@app.post("/api/v1/cto/run-research")
+async def run_cto_task(background_tasks: BackgroundTasks):
+    """
+    Эндпоинт для CTO-AI (MAF), чтобы запустить CTO-Crew (CrewAI).
+    """
+    task_id = "cto_task_latest"
+    task_results[task_id] = {"status": "running"}
+
+    background_tasks.add_task(run_crew_task, cto_crew, task_id, {})
+
+    return {"status": "CTO Crew Task Started", "task_id": task_id}
+
+
+@app.get("/api/v1/get-task-result/{task_id}")
+async def get_task_result(task_id: str):
+    """
+    Проверяет статус и результат выполненной задачи Crew.
+    """
+    result = task_results.get(task_id, {"status": "not_found"})
+    return result
 
 
 # Заглушка: Запуск MAF C-Suite
