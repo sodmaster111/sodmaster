@@ -49,7 +49,9 @@ def read_root():
     return {
         "status": "Sodmaster C-Unit MAF Gateway is online.",
         "openrouter_status": "LOADED" if openrouter_key != "NOT_SET" else "MISSING",
-        "leonardo_status": "LOADED" if leonardo_key != "NOT_SET" else "MISSING"
+        "leonardo_status": "LOADED" if leonardo_key != "NOT_SET" else "MISSING",
+        "exa_status": "LOADED" if os.environ.get("EXA_API_KEY", "NOT_SET") != "NOT_SET" else "MISSING",
+        "serper_status": "LOADED" if os.environ.get("SERPER_API_KEY", "NOT_SET") != "NOT_SET" else "MISSING"
     }
 
 
