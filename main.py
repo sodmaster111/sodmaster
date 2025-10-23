@@ -1,4 +1,6 @@
 import uvicorn
+
+# BackgroundTasks обеспечивает запуск задач в фоне без блокировки API
 from fastapi import FastAPI, BackgroundTasks
 import os
 
