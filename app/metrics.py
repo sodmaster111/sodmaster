@@ -29,6 +29,18 @@ CGO_JOB_DURATION_SECONDS = Histogram(
     "Histogram of CGO job execution time in seconds.",
 )
 
+AUX_AUDIT_EVENTS_TOTAL = Counter(
+    "audit_events_total",
+    "Total number of audit events partitioned by c_unit and severity.",
+    ["c_unit", "severity"],
+)
+
+GUARDRAIL_VIOLATIONS_TOTAL = Counter(
+    "guardrail_violations_total",
+    "Total guardrail violations partitioned by guardrail id and severity.",
+    ["guardrail_id", "severity"],
+)
+
 HTTP_REQUESTS_TOTAL = Counter(
     "http_requests_total",
     "Total HTTP requests processed by the FastAPI application, partitioned by path.",
@@ -58,3 +70,15 @@ def record_http_request(path: str) -> None:
     """Record a handled HTTP request for the provided path."""
 
     HTTP_REQUESTS_TOTAL.labels(path=path).inc()
+
+
+def record_audit_event(c_unit: str, severity: str) -> None:
+    """Increment counters for emitted audit events."""
+
+    AUX_AUDIT_EVENTS_TOTAL.labels(c_unit=c_unit, severity=severity).inc()
+
+
+def record_guardrail_violation(guardrail_id: str, severity: str) -> None:
+    """Increment counters for guardrail violation events."""
+
+    GUARDRAIL_VIOLATIONS_TOTAL.labels(guardrail_id=guardrail_id, severity=severity).inc()

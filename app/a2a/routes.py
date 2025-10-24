@@ -16,6 +16,8 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from app.audit.event_bus import AuditEvent
+from app.audit.service import AuditTrail
 from app.infra import JobStore
 from app.metrics import record_a2a_job_status
 
@@ -92,7 +94,9 @@ def _serialise_job(job_id: str, job: Dict[str, Any]) -> A2ACommandResult:
     )
 
 
-async def _run_a2a_job(job_id: str, job_store: JobStore, payload: Dict[str, Any]) -> None:
+async def _run_a2a_job(
+    job_id: str, job_store: JobStore, payload: Dict[str, Any], audit_trail: Optional[AuditTrail]
+) -> None:
     """Execute the A2A job in the background and persist its lifecycle events."""
 
     start_time = time.perf_counter()
@@ -123,12 +127,34 @@ async def _run_a2a_job(job_id: str, job_store: JobStore, payload: Dict[str, Any]
             "A2A job completed",
             extra={"event": "a2a_done", "job_id": job_id, "command": command_name},
         )
+        await _emit_audit_event(
+            audit_trail,
+            AuditEvent(
+                name="a2a.command.completed",
+                c_unit="core.a2a",
+                actor="a2a",
+                subject=job_id,
+                severity="info",
+                payload={"command": command_name},
+            ),
+        )
     except Exception as exc:
         await job_store.set_status(job_id, "failed", {"reason": str(exc)})
         record_a2a_job_status("failed", time.perf_counter() - start_time)
         logger.exception(
             "A2A job failed",
             extra={"event": "a2a_failed", "job_id": job_id, "command": command_name},
+        )
+        await _emit_audit_event(
+            audit_trail,
+            AuditEvent(
+                name="a2a.command.failed",
+                c_unit="core.a2a",
+                actor="a2a",
+                subject=job_id,
+                severity="error",
+                payload={"command": command_name, "reason": str(exc)},
+            ),
         )
 
 
@@ -161,7 +187,20 @@ async def submit_command(
     await job_store.set_status(job_id, "accepted", None)
     record_a2a_job_status("accepted")
 
-    background_tasks.add_task(_run_a2a_job, job_id, job_store, payload)
+    audit_trail: Optional[AuditTrail] = getattr(request.app.state, "audit_trail", None)
+    await _emit_audit_event(
+        audit_trail,
+        AuditEvent(
+            name="a2a.command.accepted",
+            c_unit="core.a2a",
+            actor="api",
+            subject=job_id,
+            severity="info",
+            payload={"command": command.command, "source": command.source, "target": command.target},
+        ),
+    )
+
+    background_tasks.add_task(_run_a2a_job, job_id, job_store, payload, audit_trail)
 
     response = A2ACommandResult(job_id=job_id, status="accepted")
     return response
@@ -181,3 +220,11 @@ async def get_job_status(request: Request, job_id: str) -> A2ACommandResult:
         raise HTTPException(status_code=404, detail="Job not found")
 
     return _serialise_job(job_id, job)
+
+
+async def _emit_audit_event(
+    audit_trail: Optional[AuditTrail], event: AuditEvent
+) -> None:
+    if audit_trail is None:
+        return
+    await audit_trail.emit(event)

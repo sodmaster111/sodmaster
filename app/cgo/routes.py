@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from tenacity import RetryCallState, retry, stop_after_attempt, wait_exponential
 
+from app.audit.event_bus import AuditEvent
+from app.audit.service import AuditTrail
 from app.infra import JobStore
 from app.metrics import record_cgo_job_status
 from app.ops.alerts import send_alert
@@ -80,7 +82,9 @@ def _execute_marketing_campaign(job_id: str) -> Any:
     return cgo_crew.kickoff(inputs={})
 
 
-async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
+async def _run_marketing_campaign_job(
+    job_store: JobStore, job_id: str, audit_trail: Optional[AuditTrail] = None
+) -> None:
     """Execute the CGO Crew job and persist the result via the configured store."""
 
     logger.info({"event": "cgo_start", "job_id": job_id})
@@ -93,10 +97,22 @@ async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
         result = _execute_marketing_campaign(job_id)
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
         duration = perf_counter() - start_time
-        await job_store.set_status(job_id, "failed", {"error": str(exc)})
+        error_payload = {"error": str(exc)}
+        await job_store.set_status(job_id, "failed", error_payload)
         record_cgo_job_status("failed", duration)
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
         send_alert("job_failed", {"job_id": job_id, "reason": str(exc)})
+        await _emit_audit_event(
+            audit_trail,
+            AuditEvent(
+                name="cgo.job.failed",
+                c_unit="core.cgo",
+                actor="cgo",  # crew execution context
+                subject=job_id,
+                severity="error",
+                payload=error_payload,
+            ),
+        )
         _check_job_duration(job_id, slo_timer_start, slo_threshold)
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return
@@ -106,6 +122,17 @@ async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
     record_cgo_job_status("done", duration)
     _check_job_duration(job_id, slo_timer_start, slo_threshold)
     logger.info({"event": "cgo_done", "job_id": job_id, "status": "done"})
+    await _emit_audit_event(
+        audit_trail,
+        AuditEvent(
+            name="cgo.job.completed",
+            c_unit="core.cgo",
+            actor="cgo",
+            subject=job_id,
+            severity="info",
+            payload={"duration_sec": duration},
+        ),
+    )
 
 
 @router.post(
@@ -149,7 +176,20 @@ async def run_marketing_campaign(
     await job_store.set_status(job_id, "running", None)
     record_cgo_job_status("accepted")
 
-    background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id)
+    audit_trail: Optional[AuditTrail] = getattr(request.app.state, "audit_trail", None)
+    await _emit_audit_event(
+        audit_trail,
+        AuditEvent(
+            name="cgo.job.accepted",
+            c_unit="core.cgo",
+            actor="api",
+            subject=job_id,
+            severity="info",
+            payload={"requested_job_id": requested_job_id},
+        ),
+    )
+
+    background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id, audit_trail)
 
     return MarketingCampaignStatus(job_id=job_id, status="accepted")
 
@@ -170,3 +210,11 @@ async def get_job_status(request: Request, job_id: str) -> MarketingCampaignStat
         status=job.get("status", "unknown"),
         result=job.get("result"),
     )
+
+
+async def _emit_audit_event(
+    audit_trail: Optional[AuditTrail], event: AuditEvent
+) -> None:
+    if audit_trail is None:
+        return
+    await audit_trail.emit(event)
