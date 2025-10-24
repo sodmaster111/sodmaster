@@ -5,26 +5,22 @@ from uuid import uuid4
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from app.infra import JobStore
+from app.infra.job_store import JobStore
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
-    """Execute the CGO Crew job and persist the result via the configured store."""
+async def _run_marketing_campaign_job(job_id: str, job_store: JobStore) -> None:
+    """Execute the CGO Crew job and persist the result in the in-memory registry."""
     from agents.cgo_crew import cgo_crew
 
     logger.info({"event": "cgo_start", "job_id": job_id})
     try:
         result = cgo_crew.kickoff(inputs={})
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
-        await job_store.set_status(
-            job_id,
-            "failed",
-            {"error": str(exc)},
-        )
+        await job_store.set_status(job_id, "failed", {"error": str(exc)})
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return
@@ -35,17 +31,16 @@ async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
 
 @router.post("/run-marketing-campaign")
 async def run_marketing_campaign(
-    request: Request, background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks, request: Request
 ):
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
 
-    job_id = str(uuid4())
     job_store: JobStore = request.app.state.job_store
+    job_id = str(uuid4())
+    await job_store.create(job_id, payload={})
+    await job_store.set_status(job_id, "running")
 
-    await job_store.create(job_id, {"type": "marketing_campaign"})
-    await job_store.set_status(job_id, "running", None)
-
-    background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id)
+    background_tasks.add_task(_run_marketing_campaign_job, job_id, job_store)
 
     return JSONResponse(
         status_code=202,
@@ -54,7 +49,7 @@ async def run_marketing_campaign(
 
 
 @router.get("/jobs/{job_id}")
-async def get_job_status(request: Request, job_id: str) -> dict[str, Any]:
+async def get_job_status(job_id: str, request: Request) -> Dict[str, Any]:
     job_store: JobStore = request.app.state.job_store
     job = await job_store.get(job_id)
     if job is None:

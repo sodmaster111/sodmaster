@@ -11,6 +11,7 @@ from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, JobStore, RedisJobStore
 from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
+from app.infra.job_store import InMemoryJobStore, create_job_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -55,6 +56,22 @@ app.state.job_store = _create_job_store()
 
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
+
+app.state.job_store = InMemoryJobStore()
+
+
+@app.on_event("startup")
+async def configure_job_store() -> None:
+    redis_url = os.environ.get("REDIS_URL")
+    app.state.job_store = await create_job_store(redis_url)
+
+
+@app.on_event("shutdown")
+async def shutdown_job_store() -> None:
+    job_store = getattr(app.state, "job_store", None)
+    close = getattr(job_store, "close", None)
+    if callable(close):
+        await close()
 
 
 @app.on_event("shutdown")
