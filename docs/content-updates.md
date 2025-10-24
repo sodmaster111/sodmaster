@@ -41,7 +41,7 @@ The marketing site under `app/site` is built with [Astro](https://astro.build) a
 ## Deployment workflow (Render Static)
 
 1. Ensure the `SITE_URL` environment variable is configured in the Render Static site service (defaults to `https://sodmaster.online` if omitted).
-2. The Render service `sodmaster-site` runs from the `app/site` directory with the build command `npm ci && npm run build` and publishes the `dist/` output.
+2. The Render service `sodmaster-site` runs from the `app/site` directory with the build command `npm install && npm run build` and publishes the `dist/` output.
 3. Trigger a deploy in Render—Static hosting serves the pre-rendered Astro site from the generated `dist/` folder.
 4. GitHub Actions includes an optional `Site Deploy` workflow that is disabled by default in CI; builds are executed by Render Static during deploys.
 
