@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import hashlib
 import hmac
 import json
@@ -74,7 +75,8 @@ def test_submit_command_is_idempotent(client):
     assert first.json()["job_id"] == second.json()["job_id"] == "deploy-1.2.3"
 
 
-def test_job_executes_in_background(client):
+def test_job_executes_in_background(client, caplog):
+    caplog.set_level(logging.INFO)
     payload = {
         "source": "maf",
         "target": "ops",
@@ -95,8 +97,18 @@ def test_job_executes_in_background(client):
     else:
         pytest.fail("A2A job did not complete in time")
 
+    assert any(
+        getattr(record, "event", None) == "a2a_start" and getattr(record, "job_id", None) == job_id
+        for record in caplog.records
+    )
+    assert any(
+        getattr(record, "event", None) == "a2a_done" and getattr(record, "job_id", None) == job_id
+        for record in caplog.records
+    )
 
-def test_job_failure_is_reported(client):
+
+def test_job_failure_is_reported(client, caplog):
+    caplog.set_level(logging.INFO)
     payload = {
         "source": "maf",
         "target": "ops",
@@ -116,6 +128,19 @@ def test_job_failure_is_reported(client):
         time.sleep(0.1)
     else:
         pytest.fail("A2A job did not fail in time")
+
+    assert any(
+        getattr(record, "event", None) == "a2a_start" and getattr(record, "job_id", None) == job_id
+        for record in caplog.records
+    )
+    assert any(
+        getattr(record, "event", None) == "a2a_failed" and getattr(record, "job_id", None) == job_id
+        for record in caplog.records
+    )
+
+    metrics_response = client.get("/metrics")
+    assert metrics_response.status_code == 200
+    assert 'status="failed"' in metrics_response.text
 
 
 def test_signature_required_when_secret_set(client, monkeypatch):
@@ -155,3 +180,35 @@ def test_metrics_include_a2a_route(client):
     metrics_response = client.get("/metrics")
     assert metrics_response.status_code == 200
     assert 'path="/a2a/command"' in metrics_response.text
+
+
+def test_a2a_metrics_capture_lifecycle(client):
+    payload = {
+        "source": "maf",
+        "target": "ops",
+        "command": "ping",
+        "payload": {"value": 99},
+    }
+
+    response = client.post("/a2a/command", json=payload)
+    assert response.status_code == 202
+    job_id = response.json()["job_id"]
+
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        status_response = client.get(f"/a2a/jobs/{job_id}")
+        if status_response.json()["status"] == "done":
+            break
+        time.sleep(0.05)
+    else:
+        pytest.fail("A2A job did not finish for metrics capture")
+
+    metrics_response = client.get("/metrics")
+    assert metrics_response.status_code == 200
+    body = metrics_response.text
+
+    assert "a2a_jobs_total" in body
+    assert 'status="accepted"' in body
+    assert 'status="running"' in body
+    assert 'status="done"' in body
+    assert "a2a_job_duration_seconds_count" in body

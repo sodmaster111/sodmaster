@@ -9,7 +9,7 @@ import logging
 import os
 import random
 import time
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, cast
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
@@ -94,10 +94,13 @@ def _serialise_job(job_id: str, job: Dict[str, Any]) -> A2ACommandResult:
     )
 
 
-async def _run_a2a_job(
-    job_id: str, job_store: JobStore, payload: Dict[str, Any], audit_trail: Optional[AuditTrail]
-) -> None:
+async def _run_a2a_job(job_id: str, payload: Dict[str, Any]) -> None:
     """Execute the A2A job in the background and persist its lifecycle events."""
+
+    from app.main import app  # Imported lazily to avoid circular dependency at import time.
+
+    job_store = cast(JobStore, app.state.job_store)
+    audit_trail = cast(Optional[AuditTrail], getattr(app.state, "audit_trail", None))
 
     start_time = time.perf_counter()
     command_payload = payload.get("command", {})
@@ -121,11 +124,17 @@ async def _run_a2a_job(
         else:
             raise ValueError(f"Unsupported A2A command: {command_name}")
 
+        duration = time.perf_counter() - start_time
         await job_store.set_status(job_id, "done", result)
-        record_a2a_job_status("done", time.perf_counter() - start_time)
+        record_a2a_job_status("done", duration)
         logger.info(
             "A2A job completed",
-            extra={"event": "a2a_done", "job_id": job_id, "command": command_name},
+            extra={
+                "event": "a2a_done",
+                "job_id": job_id,
+                "command": command_name,
+                "duration": duration,
+            },
         )
         await _emit_audit_event(
             audit_trail,
@@ -139,11 +148,17 @@ async def _run_a2a_job(
             ),
         )
     except Exception as exc:
+        duration = time.perf_counter() - start_time
         await job_store.set_status(job_id, "failed", {"reason": str(exc)})
-        record_a2a_job_status("failed", time.perf_counter() - start_time)
+        record_a2a_job_status("failed", duration)
         logger.exception(
             "A2A job failed",
-            extra={"event": "a2a_failed", "job_id": job_id, "command": command_name},
+            extra={
+                "event": "a2a_failed",
+                "job_id": job_id,
+                "command": command_name,
+                "duration": duration,
+            },
         )
         await _emit_audit_event(
             audit_trail,
@@ -200,7 +215,7 @@ async def submit_command(
         ),
     )
 
-    background_tasks.add_task(_run_a2a_job, job_id, job_store, payload, audit_trail)
+    background_tasks.add_task(_run_a2a_job, job_id, payload)
 
     response = A2ACommandResult(job_id=job_id, status="accepted")
     return response
