@@ -22,20 +22,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 VERSION_INFO = load_version()
 
-logging.info(
-    "Application startup | python_version=%s git_sha=%s build_time=%s",
-    VERSION_INFO["python"],
-    VERSION_INFO["git_sha"],
-    VERSION_INFO["build_time"],
-)
-
-APP_INFO.info(
-    {
-        "python": VERSION_INFO["python"],
-        "git_sha": VERSION_INFO["git_sha"],
-        "build_time": VERSION_INFO["build_time"],
-    }
-)
+APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
 
 CRITICAL_DEPENDENCIES_READY = True
 
@@ -47,7 +34,19 @@ app = FastAPI(
         "делегирования задач департаментам CrewAI."
     ),
 )
-app.state.job_store = get_job_store()
+
+job_store = get_job_store()
+job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
+
+logging.info(
+    "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
+    PYTHON_VERSION,
+    GIT_SHA,
+    BUILD_TIME,
+    job_store_backend,
+)
+
+app.state.job_store = job_store
 
 app.add_middleware(
     CORSMiddleware,
