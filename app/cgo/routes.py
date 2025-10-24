@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, Optional
+from time import perf_counter
+from typing import Any, Dict
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
@@ -9,6 +10,8 @@ from tenacity import RetryCallState, retry, stop_after_attempt, wait_exponential
 
 from app.infra import JobStore
 
+from app.metrics import record_cgo_job_status
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -17,43 +20,29 @@ router = APIRouter()
 JOBS: Dict[str, Dict[str, Any]] = {}
 
 
-class MarketingCampaignRequest(BaseModel):
-    job_id: Optional[str] = None
-
-
-def _log_retry_attempt(retry_state: RetryCallState) -> None:
-    job_id: Optional[str] = None
-    if retry_state.args:
-        job_id = retry_state.args[0]
-    elif "job_id" in retry_state.kwargs:
-        job_id = retry_state.kwargs["job_id"]
-
-    logger.info({"event": "retry", "job_id": job_id, "attempt": retry_state.attempt_number})
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(), reraise=True, before=_log_retry_attempt)
-def _execute_marketing_campaign(job_id: str) -> Any:
-    from agents.cgo_crew import cgo_crew
-
-    return cgo_crew.kickoff(inputs={})
+def _mark_job_status(job_id: str, status: str, result: Any = None) -> None:
+    JOBS[job_id] = {"status": status, "result": result}
 
 
 def _run_marketing_campaign_job(job_id: str) -> None:
     """Execute the CGO Crew job and persist the result in the in-memory registry."""
+    from agents.cgo_crew import cgo_crew
     logger.info({"event": "cgo_start", "job_id": job_id})
+    record_cgo_job_status("running")
+    start_time = perf_counter()
     try:
         result = _execute_marketing_campaign(job_id)
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
-        await job_store.set_status(
-            job_id,
-            "failed",
-            {"error": str(exc)},
-        )
+        duration = perf_counter() - start_time
+        _mark_job_status(job_id, "failed", {"error": str(exc)})
+        record_cgo_job_status("failed", duration)
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return
 
-    await job_store.set_status(job_id, "done", result)
+    duration = perf_counter() - start_time
+    _mark_job_status(job_id, "done", result)
+    record_cgo_job_status("done", duration)
     logger.info({"event": "cgo_done", "job_id": job_id, "status": "done"})
 
 
@@ -64,22 +53,9 @@ async def run_marketing_campaign(
 ):
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
 
-    if payload is None:
-        payload = MarketingCampaignRequest()
-    requested_job_id = payload.job_id
-
-    if requested_job_id and requested_job_id in JOBS:
-        job = JOBS[requested_job_id]
-        response_payload: Dict[str, Any] = {
-            "status": job["status"],
-            "job_id": requested_job_id,
-        }
-        if "result" in job:
-            response_payload["result"] = job["result"]
-        return JSONResponse(status_code=200, content=response_payload)
-
-    job_id = requested_job_id or str(uuid4())
-    JOBS[job_id] = {"status": "running", "result": None}
+    job_id = str(uuid4())
+    _mark_job_status(job_id, "running", None)
+    record_cgo_job_status("accepted")
 
     background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id)
 

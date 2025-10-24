@@ -8,6 +8,7 @@ langchain-openai
 web3
 tenacity>=8
 btcpay
+prometheus-client
 
 crewai_tools>=0.75.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
 Leonardo-Ai-SDK>=6.5.0    # SDK для нашего CGO-AI (генерация изображений)

@@ -5,10 +5,11 @@ from datetime import datetime
 from platform import python_version
 
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, Request, Response
 
 from app.cgo.routes import router as cgo_router
-from app.infra import InMemoryJobStore, JobStore, RedisJobStore
+from app.metrics import APP_INFO, record_http_request
+from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
 
@@ -24,6 +25,8 @@ logging.info(
     GIT_SHA,
     BUILD_TIME,
 )
+
+APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
 
 CRITICAL_DEPENDENCIES_READY = True
 
@@ -57,17 +60,12 @@ app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
 
 
-@app.on_event("shutdown")
-async def _shutdown_job_store() -> None:
-    job_store = getattr(app.state, "job_store", None)
-    if job_store is None:
-        return
-
-    close = getattr(job_store, "close", None)
-    if callable(close):  # pragma: no branch - minimal branching for coverage
-        result = close()
-        if inspect.isawaitable(result):
-            await result
+@app.middleware("http")
+async def observe_requests(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    record_http_request(path)
+    return response
 
 
 @app.get("/")
@@ -96,6 +94,11 @@ def healthz():
 @app.get("/readyz")
 def readyz():
     return {"status": "ok", "dependencies_ready": CRITICAL_DEPENDENCIES_READY}
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/version")
