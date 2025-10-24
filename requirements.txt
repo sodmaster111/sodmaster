@@ -6,6 +6,7 @@ semantic-kernel
 crewai
 langchain-openai
 web3
+tenacity>=8
 btcpay
 
 crewai_tools>=0.75.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
