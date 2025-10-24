@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 from datetime import datetime
@@ -37,6 +38,23 @@ app = FastAPI(
         "делегирования задач департаментам CrewAI."
     ),
 )
+
+
+def _create_job_store() -> JobStore:
+    redis_url = os.environ.get("REDIS_URL", "").strip()
+    if redis_url:
+        try:
+            store = RedisJobStore(redis_url)
+            logging.info("Using RedisJobStore")
+            return store
+        except Exception:  # pragma: no cover - logged for observability
+            logging.exception("Failed to initialise RedisJobStore, falling back")
+
+    logging.info("Using InMemoryJobStore")
+    return InMemoryJobStore()
+
+
+app.state.job_store = _create_job_store()
 
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
