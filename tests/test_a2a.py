@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -71,6 +72,50 @@ def test_submit_command_is_idempotent(client):
     assert first.status_code == 202
     assert second.status_code == 200
     assert first.json()["job_id"] == second.json()["job_id"] == "deploy-1.2.3"
+
+
+def test_job_executes_in_background(client):
+    payload = {
+        "source": "maf",
+        "target": "ops",
+        "command": "ping",
+        "payload": {"value": 42},
+    }
+
+    response = client.post("/a2a/command", json=payload)
+    job_id = response.json()["job_id"]
+
+    for _ in range(5):
+        status_response = client.get(f"/a2a/jobs/{job_id}")
+        body = status_response.json()
+        if body["status"] == "done":
+            assert body["result"] == {"status": "pong", "echo": {"value": 42}}
+            break
+        time.sleep(0.1)
+    else:
+        pytest.fail("A2A job did not complete in time")
+
+
+def test_job_failure_is_reported(client):
+    payload = {
+        "source": "maf",
+        "target": "ops",
+        "command": "unknown",
+        "payload": {},
+    }
+
+    response = client.post("/a2a/command", json=payload)
+    job_id = response.json()["job_id"]
+
+    for _ in range(5):
+        status_response = client.get(f"/a2a/jobs/{job_id}")
+        body = status_response.json()
+        if body["status"] == "failed":
+            assert "Unsupported A2A command" in body["result"]["reason"]
+            break
+        time.sleep(0.1)
+    else:
+        pytest.fail("A2A job did not fail in time")
 
 
 def test_signature_required_when_secret_set(client, monkeypatch):
