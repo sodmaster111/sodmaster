@@ -7,8 +7,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
-from app.main import app
-from app.version_info import load_version
+from app.main import VERSION, app
 
 
 client = TestClient(app)
@@ -35,4 +34,4 @@ def test_version():
     assert set(data.keys()) == {"git_sha", "build_time", "python"}
     assert isinstance(data["git_sha"], str)
     assert isinstance(data["build_time"], str)
-    assert data == load_version()
+    assert data == VERSION
