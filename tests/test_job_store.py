@@ -11,6 +11,8 @@ def test_in_memory_job_store_lifecycle():
     async def _run() -> None:
         store = InMemoryJobStore()
 
+        await store.ping()
+
         await store.create("job-1", {"foo": "bar"})
         job = await store.get("job-1")
         assert job is not None
@@ -39,6 +41,7 @@ REDIS_URL = os.getenv("REDIS_URL")
 def test_redis_job_store_lifecycle():
     async def _run() -> None:
         store = RedisJobStore(REDIS_URL)
+        await store.ping()
         job_id = f"job-{uuid4()}"
 
         try:

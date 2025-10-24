@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from typing import Any, Dict, Optional, Protocol
 
 try:  # pragma: no cover - optional dependency guard during import time
@@ -32,12 +33,15 @@ class JobStore(Protocol):
     async def create(self, job_id: str, payload: Dict[str, Any]) -> None:
         """Create a new job entry with the provided payload."""
 
+    async def ping(self) -> None:
+        """Verify the underlying store is reachable."""
+
 
 class InMemoryJobStore:
     """Simple in-memory job persistence for local development and tests."""
 
     def __init__(self) -> None:
-        self._jobs = {}
+        self._jobs: Dict[str, JobRecord] = {}
         self._lock = asyncio.Lock()
 
     async def get(self, job_id: str) -> Optional[JobRecord]:
@@ -61,6 +65,10 @@ class InMemoryJobStore:
                 "status": "pending",
                 "result": None,
             }
+
+    async def ping(self) -> None:
+        """No-op connectivity check for the in-memory store."""
+        return None
 
 
 class RedisJobStore:
@@ -110,9 +118,35 @@ class RedisJobStore:
         }
         await self._redis.set(self._key(job_id), self._dumps(record))
 
+    async def ping(self) -> None:
+        await self._redis.ping()
+
     @staticmethod
     def _dumps(payload: JobRecord) -> str:
         return json.dumps(payload, default=str)
 
     async def close(self) -> None:
         await self._redis.aclose()
+
+
+def get_job_store() -> JobStore:
+    """Return the configured job store, defaulting to the in-memory backend."""
+
+    redis_url = os.getenv("REDIS_URL", "").strip()
+    if redis_url:
+        if redis is None:
+            logger.warning(
+                "REDIS_URL provided but redis client missing; falling back to in-memory",
+            )
+        else:
+            try:
+                store = RedisJobStore(redis_url)
+                logger.info("Job store initialised", extra={"backend": "redis"})
+                return store
+            except Exception:  # pragma: no cover - defensive guard
+                logger.exception(
+                    "Failed to initialise RedisJobStore; falling back to in-memory",
+                )
+
+    logger.info("Job store initialised", extra={"backend": "in_memory"})
+    return InMemoryJobStore()
