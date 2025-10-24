@@ -1,12 +1,15 @@
+import inspect
 import logging
 import os
 from datetime import datetime
 from platform import python_version
 
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, Request, Response
 
 from app.cgo.routes import router as cgo_router
+from app.metrics import APP_INFO, record_http_request
+from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
 
@@ -23,6 +26,8 @@ logging.info(
     BUILD_TIME,
 )
 
+APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
+
 CRITICAL_DEPENDENCIES_READY = True
 
 
@@ -34,8 +39,33 @@ app = FastAPI(
     ),
 )
 
+
+def _create_job_store() -> JobStore:
+    redis_url = os.environ.get("REDIS_URL", "").strip()
+    if redis_url:
+        try:
+            store = RedisJobStore(redis_url)
+            logging.info("Using RedisJobStore")
+            return store
+        except Exception:  # pragma: no cover - logged for observability
+            logging.exception("Failed to initialise RedisJobStore, falling back")
+
+    logging.info("Using InMemoryJobStore")
+    return InMemoryJobStore()
+
+
+app.state.job_store = _create_job_store()
+
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
+
+
+@app.middleware("http")
+async def observe_requests(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    record_http_request(path)
+    return response
 
 
 @app.get("/")
@@ -64,6 +94,11 @@ def healthz():
 @app.get("/readyz")
 def readyz():
     return {"status": "ok", "dependencies_ready": CRITICAL_DEPENDENCIES_READY}
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/version")
