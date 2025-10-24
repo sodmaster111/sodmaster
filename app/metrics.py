@@ -7,6 +7,17 @@ from typing import Optional
 from app.prometheus import Counter, Histogram, Info
 
 
+A2A_JOBS_TOTAL = Counter(
+    "a2a_jobs_total",
+    "Total number of A2A jobs processed partitioned by status.",
+    ["status"],
+)
+
+A2A_JOB_DURATION_SECONDS = Histogram(
+    "a2a_job_duration_seconds",
+    "Histogram of A2A job execution time in seconds.",
+)
+
 CGO_JOBS_TOTAL = Counter(
     "cgo_jobs_total",
     "Total number of CGO jobs processed partitioned by status.",
@@ -33,6 +44,14 @@ def record_cgo_job_status(status: str, duration_seconds: Optional[float] = None)
     CGO_JOBS_TOTAL.labels(status=status).inc()
     if duration_seconds is not None:
         CGO_JOB_DURATION_SECONDS.observe(duration_seconds)
+
+
+def record_a2a_job_status(status: str, duration_seconds: Optional[float] = None) -> None:
+    """Increment A2A job counters and optionally record duration."""
+
+    A2A_JOBS_TOTAL.labels(status=status).inc()
+    if duration_seconds is not None:
+        A2A_JOB_DURATION_SECONDS.observe(duration_seconds)
 
 
 def record_http_request(path: str) -> None:
