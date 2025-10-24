@@ -7,6 +7,7 @@ from platform import python_version
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request, Response
 
+from app.a2a import router as a2a_router
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
@@ -59,6 +60,7 @@ async def ensure_job_store_connection() -> None:
         if isinstance(job_store, RedisJobStore):
             logging.info("redis=connected")
 
+app.include_router(a2a_router, prefix="/a2a")
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
 
