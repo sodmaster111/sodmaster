@@ -16,8 +16,7 @@ from app.infra import InMemoryJobStore
 @pytest.fixture(autouse=True)
 def clear_env(monkeypatch):
     monkeypatch.delenv("SLO_JOB_SEC", raising=False)
-    monkeypatch.delenv("TELEGRAM_WEBHOOK", raising=False)
-    monkeypatch.delenv("SLACK_WEBHOOK", raising=False)
+    monkeypatch.delenv("ALERT_WEBHOOK", raising=False)
     yield
 
 
@@ -49,7 +48,7 @@ def test_job_failure_triggers_alert(monkeypatch):
     store = _prepare_job_store("job-1")
     asyncio.run(routes._run_marketing_campaign_job(store, "job-1"))
 
-    assert ("job_failed", {"job_id": "job-1", "error": "boom"}) in alerts
+    assert ("job_failed", {"job_id": "job-1", "reason": "boom"}) in alerts
     job = asyncio.run(store.get("job-1"))
     assert job is not None and job["status"] == "failed"
 

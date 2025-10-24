@@ -90,7 +90,7 @@ async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
         await job_store.set_status(job_id, "failed", {"error": str(exc)})
         record_cgo_job_status("failed", duration)
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
-        send_alert("job_failed", {"job_id": job_id, "error": str(exc)})
+        send_alert("job_failed", {"job_id": job_id, "reason": str(exc)})
         _check_job_duration(job_id, slo_timer_start, slo_threshold)
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return

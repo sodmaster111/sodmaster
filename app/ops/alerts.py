@@ -7,18 +7,16 @@ import logging
 import os
 import urllib.error
 import urllib.request
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 
-def _iter_configured_webhooks() -> Iterable[Tuple[str, str]]:
-    """Yield configured webhook destinations as (name, url) tuples."""
+def _resolve_webhook() -> Optional[str]:
+    """Return the configured alert webhook URL if available."""
 
-    for env_name in ("TELEGRAM_WEBHOOK", "SLACK_WEBHOOK"):
-        url = os.getenv(env_name, "").strip()
-        if url:
-            yield env_name, url
+    url = os.getenv("ALERT_WEBHOOK", "").strip()
+    return url or None
 
 
 def send_alert(event: str, payload: Dict[str, object]) -> bool:
@@ -31,18 +29,17 @@ def send_alert(event: str, payload: Dict[str, object]) -> bool:
     headers = {"Content-Type": "application/json"}
 
     delivered = False
-    webhooks = list(_iter_configured_webhooks())
-    if not webhooks:
+    url = _resolve_webhook()
+    if not url:
         logger.info({"event": "alert_skipped", "trigger": event, "reason": "no_webhook"})
         return False
 
-    for name, url in webhooks:
-        request = urllib.request.Request(url, data=body, headers=headers, method="POST")
-        try:
-            with urllib.request.urlopen(request, timeout=5):  # nosec: B310 - trusted config
-                delivered = True
-        except urllib.error.URLError:
-            logger.exception("Failed to send alert", extra={"event": event, "webhook": name})
+    request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=5):  # nosec: B310 - trusted config
+            delivered = True
+    except urllib.error.URLError:
+        logger.exception("Failed to send alert", extra={"event": event, "webhook": "ALERT_WEBHOOK"})
 
     log_event = {"event": "alert_sent" if delivered else "alert_skipped", "trigger": event}
     if not delivered:
