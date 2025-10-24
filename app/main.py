@@ -21,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-VERSION_INFO = load_version()
+VERSION = load_version()
 
 PYTHON_VERSION = VERSION_INFO.get("python", "unknown")
 GIT_SHA = VERSION_INFO.get("git_sha", "unknown")
@@ -47,9 +47,9 @@ audit_trail = bootstrap_default_audit_trail()
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
-    PYTHON_VERSION,
-    GIT_SHA,
-    BUILD_TIME,
+    VERSION["python"],
+    VERSION["git_sha"],
+    VERSION["build_time"],
     job_store_backend,
 )
 
@@ -151,7 +151,7 @@ def metrics():
 
 @app.get("/version")
 def version():
-    return dict(VERSION_INFO)
+    return dict(VERSION)
 
 
 @app.post("/api/v1/cto/run-research")

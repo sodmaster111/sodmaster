@@ -1,37 +1,44 @@
+import importlib
 import sys
-from datetime import datetime
-from pathlib import Path
 
-import pytest
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.append(str(ROOT_DIR))
-
-from app.version_info import load_version
+from fastapi.testclient import TestClient
 
 
-@pytest.mark.parametrize(
-    "git_sha, build_time, python_runtime",
-    [
-        (
-            "2b1c9fe",
-            "2024-01-01T00:00:00Z",
-            "CPython 3.12.0",  # representative placeholder
-        )
-    ],
-)
-def test_load_version_from_environment(monkeypatch, git_sha, build_time, python_runtime):
-    monkeypatch.setenv("GIT_SHA", git_sha)
-    monkeypatch.setenv("BUILD_TIME", build_time)
-    monkeypatch.setenv("PY_RUNTIME", python_runtime)
+def _reload_main():
+    """Reload ``app.main`` to ensure VERSION reflects current environment."""
 
-    version = load_version()
+    sys.modules.pop("app.main", None)
+    return importlib.import_module("app.main")
 
-    assert set(version) == {"git_sha", "build_time", "python"}
-    assert version["git_sha"] == git_sha
-    assert version["build_time"] == build_time
-    assert version["python"] == python_runtime
 
-    parsed = datetime.fromisoformat(build_time.replace("Z", "+00:00"))
-    assert parsed.tzinfo is not None
+def test_import_without_environment(monkeypatch):
+    monkeypatch.delenv("PYTHON_VERSION", raising=False)
+    monkeypatch.delenv("GIT_SHA", raising=False)
+    monkeypatch.delenv("BUILD_TIME", raising=False)
+
+    module = _reload_main()
+
+    assert hasattr(module, "VERSION")
+    assert isinstance(module.VERSION, dict)
+
+
+def test_version_endpoint_reflects_loaded_metadata(monkeypatch):
+    monkeypatch.setenv("PYTHON_VERSION", "3.12.1")
+    monkeypatch.setenv("GIT_SHA", "abcdef123456")
+    monkeypatch.setenv("BUILD_TIME", "2024-06-01T12:00:00Z")
+
+    module = _reload_main()
+    version = module.VERSION
+
+    client = TestClient(module.app)
+    response = client.get("/version")
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload == version
+    assert set(payload) == {"python", "git_sha", "build_time"}
+    assert payload["python"].count(".") == 2
+    assert payload["git_sha"] == "abcdef123456"
+    assert payload["build_time"].endswith("Z")

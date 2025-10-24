@@ -41,4 +41,13 @@ services:
       - key: QDRANT_HOST
         value: "qdrant_placeholder"
 
+  - type: static
+    name: sodmaster-site
+    rootDir: app/site
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: SITE_URL
+        sync: false
+
 ---
