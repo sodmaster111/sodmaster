@@ -35,10 +35,14 @@ jobs:
           - name: version
             method: GET
             path: /version
-          - name: cgo
+          - name: cgo_submit
             method: POST
-            path: /cgo
+            path: /api/v1/cgo/run-marketing-campaign
             body: '{}'
+          - name: a2a_submit
+            method: POST
+            path: /a2a/command
+            body: '{"source":"external-probe","target":"ops","command":"ping","payload":{}}'
           - name: job_status
             method: GET
             path: /job_status
@@ -103,6 +107,20 @@ jobs:
 
           if [ $CURL_EXIT -ne 0 ]; then
             echo "curl exited with status $CURL_EXIT" >&2
+          fi
+
+          if [ "${HTTP_CODE}" = "405" ]; then
+            case "$NAME" in
+              cgo_submit)
+                echo "Hint: CGO endpoint expects POST /api/v1/cgo/run-marketing-campaign" >&2
+                ;;
+              a2a_submit)
+                echo "Hint: A2A endpoint expects POST /a2a/command" >&2
+                ;;
+              *)
+                echo "Received 405 for ${METHOD} ${PATH}; verify the allowed HTTP method" >&2
+                ;;
+            esac
           fi
 
       - name: Aggregate report

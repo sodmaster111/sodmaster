@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 from importlib import import_module
 from types import ModuleType
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Optional, Tuple
 
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
@@ -42,13 +42,22 @@ async def run_selftest(app: FastAPI) -> Dict[str, Any]:
             if not override_status:
                 reason = "Unable to initialise CGO crew simulation"
                 logger.warning(reason)
-                report["cgo_submit"] = {"status": "error", "reason": reason}
+                report["cgo_submit"] = {
+                    "method": "POST",
+                    "path": "/api/v1/cgo/run-marketing-campaign",
+                    "status": "error",
+                    "reason": reason,
+                }
                 report["cgo_poll"] = {
+                    "method": "GET",
+                    "path": "/api/v1/cgo/jobs/<unknown>",
                     "status": "error",
                     "reason": "CGO submission skipped due to earlier failure",
                 }
             else:
                 report["cgo_submit"], report["cgo_poll"] = await _run_cgo_flow(client)
+
+        report["a2a_submit"], report["a2a_poll"] = await _run_a2a_flow(client)
 
     overall_status = "ok"
     for key, value in report.items():
@@ -89,6 +98,8 @@ async def _run_endpoint_check(
     except Exception as exc:  # pragma: no cover - defensive guard for unexpected issues
         logger.exception("Self-test request failed", extra={"method": method, "path": path})
         return {
+            "method": method,
+            "path": path,
             "status": "error",
             "reason": str(exc),
         }
@@ -96,6 +107,8 @@ async def _run_endpoint_check(
     payload = _safe_json(response)
 
     result: Dict[str, Any] = {
+        "method": method,
+        "path": path,
         "status": "ok" if response.status_code == expected_status else "error",
         "http_status": response.status_code,
         "duration_ms": int((time.monotonic() - started) * 1000),
@@ -121,6 +134,8 @@ async def _run_cgo_flow(client: AsyncClient) -> tuple[Dict[str, Any], Dict[str, 
 
     if submit_result.get("status") != "ok":
         return submit_result, {
+            "method": "GET",
+            "path": "/api/v1/cgo/jobs/<unknown>",
             "status": "error",
             "reason": "CGO submission failed, polling skipped",
         }
@@ -129,6 +144,8 @@ async def _run_cgo_flow(client: AsyncClient) -> tuple[Dict[str, Any], Dict[str, 
     job_id = payload.get("job_id")
     if not job_id:
         return submit_result, {
+            "method": "GET",
+            "path": "/api/v1/cgo/jobs/<unknown>",
             "status": "error",
             "reason": "CGO submission did not return a job_id",
         }
@@ -152,7 +169,12 @@ async def _run_cgo_flow(client: AsyncClient) -> tuple[Dict[str, Any], Dict[str, 
             return submit_result, poll_attempt
 
     if poll_result is None:
-        poll_result = {"status": "error", "reason": "CGO polling did not execute"}
+        poll_result = {
+            "method": "GET",
+            "path": f"/api/v1/cgo/jobs/{job_id}",
+            "status": "error",
+            "reason": "CGO polling did not execute",
+        }
     else:
         poll_result = poll_result.copy()
         poll_result["status"] = "error"
@@ -161,6 +183,59 @@ async def _run_cgo_flow(client: AsyncClient) -> tuple[Dict[str, Any], Dict[str, 
         )
 
     return submit_result, poll_result
+
+
+async def _run_a2a_flow(client: AsyncClient) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Submit an A2A command and poll its status using the internal client."""
+
+    payload = {
+        "source": "selftest",
+        "target": "ops",
+        "command": "ping",
+        "payload": {},
+    }
+
+    submit_result = await _run_endpoint_check(
+        client,
+        "POST",
+        "/a2a/command",
+        expected_status=202,
+        json=payload,
+    )
+
+    if submit_result.get("status") != "ok":
+        return submit_result, {
+            "method": "GET",
+            "path": "/a2a/jobs/<unknown>",
+            "status": "error",
+            "reason": "A2A submission failed, polling skipped",
+        }
+
+    payload = submit_result.get("response", {}) or {}
+    job_id = payload.get("job_id")
+    if not job_id:
+        return submit_result, {
+            "method": "GET",
+            "path": "/a2a/jobs/<unknown>",
+            "status": "error",
+            "reason": "A2A submission did not return a job_id",
+        }
+
+    status_result = await _run_endpoint_check(
+        client,
+        "GET",
+        f"/a2a/jobs/{job_id}",
+        expected_status=200,
+    )
+
+    if status_result.get("status") != "ok":
+        status_result = status_result.copy()
+        status_result["reason"] = status_result.get(
+            "reason",
+            f"A2A job {job_id} polling returned HTTP {status_result.get('http_status')}",
+        )
+
+    return submit_result, status_result
 
 
 def _safe_json(response: Any) -> Any:

@@ -21,9 +21,21 @@ def test_selftest_endpoint():
     payload = response.json()
     assert payload["meta"]["overall_status"] == "ok"
 
-    for key in ("healthz", "readyz", "version", "cgo_submit", "cgo_poll"):
+    for key in (
+        "healthz",
+        "readyz",
+        "version",
+        "cgo_submit",
+        "cgo_poll",
+        "a2a_submit",
+        "a2a_poll",
+    ):
         assert key in payload
         assert payload[key]["status"] in {"ok", "error"}
+        assert payload[key]["method"] in {"GET", "POST"}
 
     assert payload["cgo_submit"]["status"] == "ok"
     assert payload["cgo_poll"]["status"] == "ok"
+    assert payload["cgo_submit"]["method"] == "POST"
+    assert payload["a2a_submit"]["status"] == "ok"
+    assert payload["a2a_submit"]["method"] == "POST"
