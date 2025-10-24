@@ -1,14 +1,26 @@
-from crewai import Agent, Task, Crew, Process
-from langchain_community.llms import OpenRouter
+import logging
 import os
+
+from crewai import Agent, Task, Crew, Process
+from langchain_openai import ChatOpenAI
 
 # Импорт инструментов
 from tools.search_tools import exa_search_tool, scrape_tool
 
 # Настройка "Мозга" (OpenRouter) - CTO нужна лучшая модель
-llm = OpenRouter(
-    api_key=os.environ.get("OPENROUTER_API_KEY"),
-    model_name="openai/gpt-4o"  # Модель S-класса для R&D
+logger = logging.getLogger(__name__)
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
+
+if not openrouter_api_key:
+    logger.warning(
+        "OPENROUTER_API_KEY is not set. Initializing the OpenRouter client without authentication."
+    )
+
+llm = ChatOpenAI(
+    model=os.getenv("OPENROUTER_MODEL", "openai/gpt-4o"),
+    api_key=openrouter_api_key or None,
+    base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+    temperature=0.2,
 )
 
 # --- СПЕЦИАЛИСТЫ (AGENTS) CTO-AI ---
