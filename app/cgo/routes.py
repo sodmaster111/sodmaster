@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
@@ -55,4 +55,4 @@ async def get_job_status(job_id: str, request: Request) -> Dict[str, Any]:
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return {"status": job["status"], "result": job.get("result")}
+    return {"status": job.get("status"), "result": job.get("result")}
