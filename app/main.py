@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import BackgroundTasks, FastAPI
 
 from app.cgo.routes import router as cgo_router
+from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -34,6 +35,7 @@ app = FastAPI(
 )
 
 app.include_router(cgo_router, prefix="/api/v1/cgo")
+app.include_router(ops_router)
 
 
 @app.get("/")
