@@ -6,10 +6,10 @@ import hashlib
 import hmac
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -88,8 +88,14 @@ def _serialise_job(job_id: str, job: Dict[str, Any]) -> A2ACommandResult:
     )
 
 
-@router.post("/command", response_model=A2ACommandResult)
-async def submit_command(request: Request, command: A2ACommand) -> JSONResponse:
+@router.post(
+    "/command",
+    response_model=A2ACommandResult,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def submit_command(
+    request: Request, command: A2ACommand
+) -> Union[JSONResponse, A2ACommandResult]:
     """Persist an A2A command and return its tracking identifier."""
 
     await _verify_signature(request)
@@ -99,7 +105,7 @@ async def submit_command(request: Request, command: A2ACommand) -> JSONResponse:
     if existing_job is not None:
         result = _serialise_job(job_id, existing_job)
         return JSONResponse(
-            status_code=200,
+            status_code=status.HTTP_200_OK,
             content=result.model_dump(exclude_none=True),
         )
 
@@ -111,13 +117,14 @@ async def submit_command(request: Request, command: A2ACommand) -> JSONResponse:
     await job_store.set_status(job_id, "accepted", None)
 
     response = A2ACommandResult(job_id=job_id, status="accepted")
-    return JSONResponse(
-        status_code=202,
-        content=response.model_dump(exclude_none=True),
-    )
+    return response
 
 
-@router.get("/jobs/{job_id}", response_model=A2ACommandResult)
+@router.get(
+    "/jobs/{job_id}",
+    response_model=A2ACommandResult,
+    status_code=status.HTTP_200_OK,
+)
 async def get_job_status(request: Request, job_id: str) -> A2ACommandResult:
     """Return the status for a previously submitted A2A command."""
 
