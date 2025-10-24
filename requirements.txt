@@ -7,6 +7,7 @@ openrouter-client
 web3
 btcpay
 
-crewai_tools     # Пакет для стандартных инструментов (поиск, браузер, файлы)
-leonardo-ai      # SDK для нашего CGO-AI (генерация изображений)
+crewai_tools>=0.75.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
+Leonardo-Ai-SDK>=6.5.0    # SDK для нашего CGO-AI (генерация изображений)
+pytest
 exa_py           # SDK для Exa (продвинутый поиск для CGO/CTO)
