@@ -23,9 +23,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 VERSION = load_version()
 
-PYTHON_VERSION = VERSION_INFO.get("python", "unknown")
-GIT_SHA = VERSION_INFO.get("git_sha", "unknown")
-BUILD_TIME = VERSION_INFO.get("build_time", "unknown")
+PYTHON_VERSION = VERSION.get("python", "unknown")
+GIT_SHA = VERSION.get("git_sha", "unknown")
+BUILD_TIME = VERSION.get("build_time", "unknown")
 
 APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
 
