@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Dict
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
@@ -54,7 +54,7 @@ async def run_marketing_campaign(
 
 
 @router.get("/jobs/{job_id}")
-async def get_job_status(request: Request, job_id: str) -> dict[str, Any]:
+async def get_job_status(request: Request, job_id: str) -> Dict[str, Any]:
     job_store: JobStore = request.app.state.job_store
     job = await job_store.get(job_id)
     if job is None:
