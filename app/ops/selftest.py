@@ -15,6 +15,8 @@ from typing import Any, AsyncIterator, Dict, Optional, Tuple
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
+from app.infra import RedisJobStore
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,16 +70,40 @@ async def run_selftest(app: FastAPI) -> Dict[str, Any]:
             break
 
     finished_at = datetime.now(tz=timezone.utc)
+    store_backend, redis_connected = await _resolve_job_store_status(app)
+
     report["meta"] = {
         "overall_status": overall_status,
         "started_at": started_at.isoformat(),
         "finished_at": finished_at.isoformat(),
         "duration_ms": int((time.monotonic() - monotonic_started) * 1000),
+        "job_store": store_backend,
+        "redis_connected": redis_connected,
     }
 
     logger.info("Self-test execution completed", extra={"overall_status": overall_status})
 
     return report
+
+
+async def _resolve_job_store_status(app: FastAPI) -> tuple[str, bool]:
+    """Determine the active job store backend and whether Redis is reachable."""
+
+    job_store = getattr(app.state, "job_store", None)
+
+    if job_store is None:
+        logger.warning("Job store not initialised on app.state")
+        return "memory", False
+
+    if isinstance(job_store, RedisJobStore):
+        try:
+            await job_store.ping()
+        except Exception:  # pragma: no cover - defensive guard for Redis outages
+            logger.exception("Redis job store ping failed during self-test")
+            return "redis", False
+        return "redis", True
+
+    return "memory", False
 
 
 async def _run_endpoint_check(

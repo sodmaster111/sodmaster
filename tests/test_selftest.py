@@ -20,6 +20,8 @@ def test_selftest_endpoint():
 
     payload = response.json()
     assert payload["meta"]["overall_status"] == "ok"
+    assert payload["meta"]["job_store"] in {"memory", "redis"}
+    assert payload["meta"]["redis_connected"] in {True, False}
 
     for key in (
         "healthz",
