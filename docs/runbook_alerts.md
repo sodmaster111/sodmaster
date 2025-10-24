@@ -9,10 +9,11 @@ variable. If the variable is empty or unset, alerts are skipped.
 
 ### Events
 
-| Event              | Trigger condition                                    | Payload fields                                 |
-| ------------------ | ----------------------------------------------------- | ---------------------------------------------- |
-| `job_failed`       | CGO job execution raises an exception                 | `job_id`, `reason`                             |
-| `latency_slo_miss` | Job runtime exceeds the `SLO_JOB_SEC` latency target | `job_id`, `duration_sec`, `threshold_sec`      |
+| Event                 | Trigger condition                                    | Payload fields                                                    |
+| --------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `job_failed`          | CGO job execution raises an exception                 | `job_id`, `reason`                                                |
+| `latency_slo_miss`    | Job runtime exceeds the `SLO_JOB_SEC` latency target | `job_id`, `duration_sec`, `threshold_sec`                         |
+| `guardrail_violation` | Guardrail breach (`cgo-job-failure`, `a2a-command-failure`) | `guardrail_id`, `reason`, `event`, `subject`                       |
 
 ## Triage checklist
 

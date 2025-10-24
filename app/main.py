@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.a2a import router as a2a_router
+from app.audit.service import bootstrap_default_audit_trail
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
@@ -21,6 +22,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 VERSION_INFO = load_version()
+
+PYTHON_VERSION = VERSION_INFO.get("python", "unknown")
+GIT_SHA = VERSION_INFO.get("git_sha", "unknown")
+BUILD_TIME = VERSION_INFO.get("build_time", "unknown")
 
 APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
 
@@ -38,6 +43,8 @@ app = FastAPI(
 job_store = get_job_store()
 job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
 
+audit_trail = bootstrap_default_audit_trail()
+
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
     PYTHON_VERSION,
@@ -47,6 +54,7 @@ logging.info(
 )
 
 app.state.job_store = job_store
+app.state.audit_trail = audit_trail
 
 app.add_middleware(
     CORSMiddleware,
