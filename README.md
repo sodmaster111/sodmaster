@@ -11,3 +11,7 @@ The Sodmaster Corporation
   can expose accurate build metadata. The deploy workflow also publishes
   `app/version_env.json` as an artifact that can be mounted for offline
   environments.
+- The marketing site under `app/site` is built with Astro for Render Static.
+  - Set the `SITE_URL` environment variable to the final public hostname.
+  - Use `cd app/site && npm install && npm run build` as the build command.
+  - Publish the contents of `app/site/dist`.

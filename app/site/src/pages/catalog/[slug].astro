@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import products from '../../data/products.json';
+
+const { slug } = Astro.params;
+const product = products.find((item) => item.slug === slug);
+
+if (!product) {
+  throw new Error(`Product ${slug} not found`);
+}
+---
+<BaseLayout title={`${product.title} | Sodmaster`} description={product.seo?.description ?? product.summary}>
+  <article class="product-detail">
+    <header>
+      <p class="eyebrow">{product.tags.join(' · ')}</p>
+      <h1>{product.title}</h1>
+      <p class="summary">{product.summary}</p>
+      <p class="price">Pricing: {product.price}</p>
+    </header>
+    <section>
+      <h2>Engagement highlights</h2>
+      <ul>
+        <li>Dedicated agronomy strategist and AI success manager</li>
+        <li>Integration with Sodmaster logistics cloud and partner APIs</li>
+        <li>Quarterly playbooks with ROI modeling tailored to your grounds</li>
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+<style>
+  .product-detail {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #3a506b;
+  }
+
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .summary {
+    font-size: 1.125rem;
+    color: #33415c;
+  }
+
+  .price {
+    font-weight: 600;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.75rem;
+    padding-left: 1.25rem;
+  }
+</style>
