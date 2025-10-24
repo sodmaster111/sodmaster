@@ -1,5 +1,6 @@
 import logging
-from time import perf_counter
+import os
+import time
 from typing import Any, Dict
 from uuid import uuid4
 
@@ -12,6 +13,8 @@ from app.infra import JobStore
 
 from app.metrics import record_cgo_job_status
 
+from app.ops.alerts import send_alert
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -20,16 +23,40 @@ router = APIRouter()
 JOBS: Dict[str, Dict[str, Any]] = {}
 
 
-def _mark_job_status(job_id: str, status: str, result: Any = None) -> None:
-    JOBS[job_id] = {"status": status, "result": result}
+def _resolve_slo_threshold() -> float:
+    """Return the configured latency SLO threshold in seconds."""
+
+    value = os.getenv("SLO_JOB_SEC", "60")
+    try:
+        return float(value)
+    except ValueError:
+        logger.warning(
+            {"event": "invalid_slo_config", "value": value, "default": 60},
+        )
+        return 60.0
+
+
+def _check_job_duration(job_id: str, start_ts: float, threshold: float) -> None:
+    """Emit an alert if the job execution time breached the latency SLO."""
+
+    duration = time.monotonic() - start_ts
+    if duration > threshold:
+        send_alert(
+            "latency_slo_miss",
+            {
+                "job_id": job_id,
+                "duration_sec": duration,
+                "threshold_sec": threshold,
+            },
+        )
 
 
 def _run_marketing_campaign_job(job_id: str) -> None:
     """Execute the CGO Crew job and persist the result in the in-memory registry."""
     from agents.cgo_crew import cgo_crew
     logger.info({"event": "cgo_start", "job_id": job_id})
-    record_cgo_job_status("running")
-    start_time = perf_counter()
+    slo_threshold = _resolve_slo_threshold()
+    start_ts = time.monotonic()
     try:
         result = _execute_marketing_campaign(job_id)
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
@@ -37,12 +64,13 @@ def _run_marketing_campaign_job(job_id: str) -> None:
         _mark_job_status(job_id, "failed", {"error": str(exc)})
         record_cgo_job_status("failed", duration)
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
+        send_alert("job_failed", {"job_id": job_id, "error": str(exc)})
+        _check_job_duration(job_id, start_ts, slo_threshold)
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return
 
-    duration = perf_counter() - start_time
-    _mark_job_status(job_id, "done", result)
-    record_cgo_job_status("done", duration)
+    JOBS[job_id] = {"status": "done", "result": result}
+    _check_job_duration(job_id, start_ts, slo_threshold)
     logger.info({"event": "cgo_done", "job_id": job_id, "status": "done"})
 
 
