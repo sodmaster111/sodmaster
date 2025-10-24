@@ -1,0 +1,128 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import products from '../data/products.json';
+---
+<BaseLayout title="Sodmaster" description="AI-assisted sod logistics and care">
+  <section class="hero">
+    <p class="eyebrow">Enterprise sod intelligence</p>
+    <h1>Grow greener revenue with AI-automated turf operations.</h1>
+    <p class="lede">
+      Sodmaster orchestrates procurement, irrigation, and installation workflows so your grounds team can focus on outcomes—not spreadsheets.
+    </p>
+    <div class="actions">
+      <a class="primary" href="/catalog/">Explore catalog</a>
+      <a class="ghost" href="#contact">Book a consult</a>
+    </div>
+  </section>
+
+  <section class="catalog-preview">
+    <div class="section-heading">
+      <h2>Flagship capabilities</h2>
+      <a href="/catalog/">View all services</a>
+    </div>
+    <div class="grid">
+      {products.slice(0, 3).map((product) => (
+        <article>
+          <h3>
+            <a href={`/catalog/${product.slug}/`}>{product.title}</a>
+          </h3>
+          <p>{product.summary}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2>Let’s architect your turf program</h2>
+    <p>
+      Send a note to <a href="mailto:hello@sodmaster.example">hello@sodmaster.example</a> and our concierge will respond within one business day.
+    </p>
+  </section>
+</BaseLayout>
+<style>
+  .hero {
+    display: grid;
+    gap: 1.5rem;
+    text-align: left;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #3a506b;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    margin: 0;
+  }
+
+  .lede {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    max-width: 38rem;
+    color: #33415c;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .primary,
+  .ghost {
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .primary {
+    background: linear-gradient(135deg, #0b7285, #1864ab);
+    color: #fff;
+  }
+
+  .ghost {
+    border: 2px solid #1864ab;
+    color: #1864ab;
+  }
+
+  .catalog-preview {
+    margin-top: 5rem;
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .grid article {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+  }
+
+  .contact {
+    margin-top: 6rem;
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+  }
+
+  @media (min-width: 48rem) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

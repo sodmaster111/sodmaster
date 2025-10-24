@@ -41,4 +41,12 @@ services:
       - key: QDRANT_HOST
         value: "qdrant_placeholder"
 
+  - type: static_site
+    name: sodmaster-marketing
+    buildCommand: "cd app/site && npm install && npm run build"
+    publishPath: "app/site/dist"
+    envVars:
+      - key: SITE_URL
+        value: "https://www.sodmaster.com"
+
 ---
