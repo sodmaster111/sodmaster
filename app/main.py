@@ -1,3 +1,4 @@
+import logging
 import os
 
 import uvicorn
@@ -7,6 +8,9 @@ from agents.cto_crew import cto_crew
 from app.cgo.routes import router as cgo_router
 from app.services.tasks import run_crew_task, task_results
 
+
+logging.basicConfig(level=logging.INFO)
+
 app = FastAPI(
     title="Sodmaster C-unit (MAF Gateway v2.0)",
     description=(
@@ -15,7 +19,7 @@ app = FastAPI(
     ),
 )
 
-app.include_router(cgo_router, prefix="/api/v1/cgo")
+app.include_router(cgo_router)
 
 
 @app.get("/")
