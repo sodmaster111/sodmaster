@@ -15,3 +15,8 @@ The Sodmaster Corporation
   - Set the `SITE_URL` environment variable to the final public hostname.
   - Use `cd app/site && npm install && npm run build` as the build command.
   - Publish the contents of `app/site/dist`.
+
+## CI for site
+
+The site deployment workflow (`.github/workflows/site-deploy.yml`) is disabled by default.
+To enable it, add a repository secret named `ENABLE_SITE_CI` with the value `true`.
