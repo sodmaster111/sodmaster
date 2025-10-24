@@ -1,9 +1,11 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from tenacity import RetryCallState, retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +15,32 @@ router = APIRouter()
 JOBS: Dict[str, Dict[str, Any]] = {}
 
 
-def _run_marketing_campaign_job(job_id: str) -> None:
-    """Execute the CGO Crew job and persist the result in the in-memory registry."""
+class MarketingCampaignRequest(BaseModel):
+    job_id: Optional[str] = None
+
+
+def _log_retry_attempt(retry_state: RetryCallState) -> None:
+    job_id: Optional[str] = None
+    if retry_state.args:
+        job_id = retry_state.args[0]
+    elif "job_id" in retry_state.kwargs:
+        job_id = retry_state.kwargs["job_id"]
+
+    logger.info({"event": "retry", "job_id": job_id, "attempt": retry_state.attempt_number})
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(), reraise=True, before=_log_retry_attempt)
+def _execute_marketing_campaign(job_id: str) -> Any:
     from agents.cgo_crew import cgo_crew
 
+    return cgo_crew.kickoff(inputs={})
+
+
+def _run_marketing_campaign_job(job_id: str) -> None:
+    """Execute the CGO Crew job and persist the result in the in-memory registry."""
     logger.info({"event": "cgo_start", "job_id": job_id})
     try:
-        result = cgo_crew.kickoff(inputs={})
+        result = _execute_marketing_campaign(job_id)
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
         JOBS[job_id] = {"status": "failed", "result": {"error": str(exc)}}
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
@@ -31,10 +52,27 @@ def _run_marketing_campaign_job(job_id: str) -> None:
 
 
 @router.post("/run-marketing-campaign")
-async def run_marketing_campaign(background_tasks: BackgroundTasks):
+async def run_marketing_campaign(
+    background_tasks: BackgroundTasks,
+    payload: Optional[MarketingCampaignRequest] = None,
+):
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
 
-    job_id = str(uuid4())
+    if payload is None:
+        payload = MarketingCampaignRequest()
+    requested_job_id = payload.job_id
+
+    if requested_job_id and requested_job_id in JOBS:
+        job = JOBS[requested_job_id]
+        response_payload: Dict[str, Any] = {
+            "status": job["status"],
+            "job_id": requested_job_id,
+        }
+        if "result" in job:
+            response_payload["result"] = job["result"]
+        return JSONResponse(status_code=200, content=response_payload)
+
+    job_id = requested_job_id or str(uuid4())
     JOBS[job_id] = {"status": "running", "result": None}
 
     background_tasks.add_task(_run_marketing_campaign_job, job_id)
