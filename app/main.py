@@ -20,9 +20,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-VERSION_INFO = load_version()
+VERSION = load_version()
 
-APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
+APP_INFO.info({"python": VERSION["python"], "git_sha": VERSION["git_sha"]})
 
 CRITICAL_DEPENDENCIES_READY = True
 
@@ -40,9 +40,9 @@ job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
-    PYTHON_VERSION,
-    GIT_SHA,
-    BUILD_TIME,
+    VERSION["python"],
+    VERSION["git_sha"],
+    VERSION["build_time"],
     job_store_backend,
 )
 
@@ -143,7 +143,7 @@ def metrics():
 
 @app.get("/version")
 def version():
-    return dict(VERSION_INFO)
+    return dict(VERSION)
 
 
 @app.post("/api/v1/cto/run-research")
