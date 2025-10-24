@@ -2,13 +2,13 @@ import sys
 from pathlib import Path
 
 from fastapi.testclient import TestClient
-from platform import python_version
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 from app.main import app
+from app.version_info import load_version
 
 
 client = TestClient(app)
@@ -35,4 +35,4 @@ def test_version():
     assert set(data.keys()) == {"git_sha", "build_time", "python"}
     assert isinstance(data["git_sha"], str)
     assert isinstance(data["build_time"], str)
-    assert data["python"] == python_version()
+    assert data == load_version()
