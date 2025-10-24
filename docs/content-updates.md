@@ -18,6 +18,7 @@ The marketing site under `app/site` is built with [Astro](https://astro.build) a
 ## Editing catalog inventory
 
 - Update product metadata in `app/site/src/data/products.json`.
+- Collections, testimonials, and other structured content are sourced from the JSON files under `app/site/src/data/*.json`.
 - Each entry supports:
   - `slug`: URL path for the service (keep lowercase and hyphenated).
   - `title`, `summary`, and `price`: update copy as needed.
@@ -39,10 +40,10 @@ The marketing site under `app/site` is built with [Astro](https://astro.build) a
 
 ## Deployment workflow (Render Static)
 
-1. Ensure the `SITE_URL` environment variable is configured in the Render service (e.g., `https://www.sodmaster.com`).
-2. On Render, set the build command to `cd app/site && npm install && npm run build`.
-3. Set the publish directory to `app/site/dist`.
-4. Trigger a deploy—Render will serve the pre-rendered Astro site from the generated `dist/` folder.
+1. Ensure the `SITE_URL` environment variable is configured in the Render Static site service (defaults to `https://sodmaster.online` if omitted).
+2. The Render service `sodmaster-site` runs from the `app/site` directory with the build command `npm ci && npm run build` and publishes the `dist/` output.
+3. Trigger a deploy in Render—Static hosting serves the pre-rendered Astro site from the generated `dist/` folder.
+4. GitHub Actions includes an optional `Site Deploy` workflow that is disabled by default in CI; builds are executed by Render Static during deploys.
 
 ## Accessibility & performance checks
 
