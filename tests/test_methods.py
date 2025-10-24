@@ -34,7 +34,7 @@ def test_get_on_a2a_command_returns_method_not_allowed_json(client):
     assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
     assert response.json() == {
         "error": "method_not_allowed",
-        "detail": "Use POST /a2a/command",
+        "detail": "use one of: ['POST']",
     }
 
 
@@ -44,7 +44,7 @@ def test_get_on_cgo_run_marketing_campaign_returns_method_not_allowed_json(clien
     assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
     assert response.json() == {
         "error": "method_not_allowed",
-        "detail": "Use POST /api/v1/cgo/run-marketing-campaign",
+        "detail": "use one of: ['POST']",
     }
 
 
