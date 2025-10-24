@@ -26,3 +26,35 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+  trigger-external-probe:
+    name: Trigger external probe workflow
+    runs-on: ubuntu-latest
+    needs: tests
+    if: ${{ secrets.SERVICE_URL != '' }}
+    permissions:
+      workflow: write
+    steps:
+      - name: Dispatch external-probe workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflowId = 'external-probe.yml';
+            let ref = context.ref;
+            if (context.eventName === 'pull_request' && context.payload.pull_request) {
+              ref = context.payload.pull_request.head.ref;
+            } else if (ref.startsWith('refs/heads/')) {
+              ref = ref.replace('refs/heads/', '');
+            }
+
+            if (ref.startsWith('refs/')) {
+              core.warning(`Unable to dispatch workflow using ref "${ref}".`);
+            } else {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflowId,
+                ref,
+              });
+            }
