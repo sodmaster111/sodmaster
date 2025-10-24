@@ -1,7 +1,8 @@
 import logging
 import os
 import time
-from typing import Any, Dict
+from time import perf_counter
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
@@ -10,9 +11,7 @@ from pydantic import BaseModel
 from tenacity import RetryCallState, retry, stop_after_attempt, wait_exponential
 
 from app.infra import JobStore
-
 from app.metrics import record_cgo_job_status
-
 from app.ops.alerts import send_alert
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-JOBS: Dict[str, Dict[str, Any]] = {}
+class MarketingCampaignRequest(BaseModel):
+    job_id: Optional[str] = None
 
 
 def _resolve_slo_threshold() -> float:
@@ -51,38 +51,90 @@ def _check_job_duration(job_id: str, start_ts: float, threshold: float) -> None:
         )
 
 
-def _run_marketing_campaign_job(job_id: str) -> None:
-    """Execute the CGO Crew job and persist the result in the in-memory registry."""
+def _log_retry_attempt(retry_state: RetryCallState) -> None:
+    job_id: Optional[str] = None
+    if retry_state.args:
+        job_id = retry_state.args[0]
+    elif "job_id" in retry_state.kwargs:
+        job_id = retry_state.kwargs["job_id"]
+
+    logger.info(
+        {
+            "event": "retry",
+            "job_id": job_id,
+            "attempt": retry_state.attempt_number,
+        }
+    )
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(), reraise=True, before=_log_retry_attempt)
+def _execute_marketing_campaign(job_id: str) -> Any:
     from agents.cgo_crew import cgo_crew
+
+    return cgo_crew.kickoff(inputs={})
+
+
+async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
+    """Execute the CGO Crew job and persist the result via the configured store."""
+
     logger.info({"event": "cgo_start", "job_id": job_id})
+    record_cgo_job_status("running")
     slo_threshold = _resolve_slo_threshold()
-    start_ts = time.monotonic()
+    slo_timer_start = time.monotonic()
+    start_time = perf_counter()
+
     try:
         result = _execute_marketing_campaign(job_id)
     except Exception as exc:  # pragma: no cover - safeguard for unexpected issues
         duration = perf_counter() - start_time
-        _mark_job_status(job_id, "failed", {"error": str(exc)})
+        await job_store.set_status(job_id, "failed", {"error": str(exc)})
         record_cgo_job_status("failed", duration)
         logger.exception("CGO marketing campaign job failed", extra={"job_id": job_id})
         send_alert("job_failed", {"job_id": job_id, "error": str(exc)})
-        _check_job_duration(job_id, start_ts, slo_threshold)
+        _check_job_duration(job_id, slo_timer_start, slo_threshold)
         logger.info({"event": "cgo_done", "job_id": job_id, "status": "failed"})
         return
 
-    JOBS[job_id] = {"status": "done", "result": result}
-    _check_job_duration(job_id, start_ts, slo_threshold)
+    await job_store.set_status(job_id, "done", result)
+    duration = perf_counter() - start_time
+    record_cgo_job_status("done", duration)
+    _check_job_duration(job_id, slo_timer_start, slo_threshold)
     logger.info({"event": "cgo_done", "job_id": job_id, "status": "done"})
 
 
 @router.post("/run-marketing-campaign")
 async def run_marketing_campaign(
+    request: Request,
     background_tasks: BackgroundTasks,
     payload: Optional[MarketingCampaignRequest] = None,
 ):
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
 
-    job_id = str(uuid4())
-    _mark_job_status(job_id, "running", None)
+    job_store: JobStore = request.app.state.job_store
+    if payload is None:
+        payload = MarketingCampaignRequest()
+
+    requested_job_id = payload.job_id
+    if requested_job_id:
+        existing_job = await job_store.get(requested_job_id)
+        if existing_job is not None:
+            response_payload: Dict[str, Any] = {
+                "status": existing_job.get("status"),
+                "job_id": requested_job_id,
+            }
+            if "result" in existing_job:
+                response_payload["result"] = existing_job.get("result")
+            return JSONResponse(status_code=200, content=response_payload)
+
+    job_id = requested_job_id or str(uuid4())
+    await job_store.create(
+        job_id,
+        {
+            "type": "marketing_campaign",
+            "payload": payload.dict(exclude_none=True),
+        },
+    )
+    await job_store.set_status(job_id, "running", None)
     record_cgo_job_status("accepted")
 
     background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id)

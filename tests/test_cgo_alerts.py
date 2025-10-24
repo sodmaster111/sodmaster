@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import types
 from pathlib import Path
@@ -9,6 +10,7 @@ if str(ROOT_DIR) not in sys.path:  # pragma: no cover - defensive path setup
     sys.path.append(str(ROOT_DIR))
 
 from app.cgo import routes
+from app.infra import InMemoryJobStore
 
 
 @pytest.fixture(autouse=True)
@@ -17,6 +19,13 @@ def clear_env(monkeypatch):
     monkeypatch.delenv("TELEGRAM_WEBHOOK", raising=False)
     monkeypatch.delenv("SLACK_WEBHOOK", raising=False)
     yield
+
+
+def _prepare_job_store(job_id: str) -> InMemoryJobStore:
+    store = InMemoryJobStore()
+    asyncio.run(store.create(job_id, {"type": "marketing_campaign"}))
+    asyncio.run(store.set_status(job_id, "running"))
+    return store
 
 
 def test_job_failure_triggers_alert(monkeypatch):
@@ -32,13 +41,17 @@ def test_job_failure_triggers_alert(monkeypatch):
     monkeypatch.setitem(sys.modules, "agents.cgo_crew", fake_module)
 
     alerts = []
-    monkeypatch.setattr(routes, "send_alert", lambda event, payload: alerts.append((event, payload)))
+    monkeypatch.setattr(
+        routes, "send_alert", lambda event, payload: alerts.append((event, payload))
+    )
     monkeypatch.setenv("SLO_JOB_SEC", "1000")
 
-    routes._run_marketing_campaign_job("job-1")
+    store = _prepare_job_store("job-1")
+    asyncio.run(routes._run_marketing_campaign_job(store, "job-1"))
 
     assert ("job_failed", {"job_id": "job-1", "error": "boom"}) in alerts
-    assert routes.JOBS["job-1"]["status"] == "failed"
+    job = asyncio.run(store.get("job-1"))
+    assert job is not None and job["status"] == "failed"
 
 
 def test_latency_slo_miss_triggers_alert(monkeypatch):
@@ -52,14 +65,27 @@ def test_latency_slo_miss_triggers_alert(monkeypatch):
     agents_pkg.cgo_crew = fake_module
     monkeypatch.setitem(sys.modules, "agents", agents_pkg)
     monkeypatch.setitem(sys.modules, "agents.cgo_crew", fake_module)
-    times = iter([0.0, 2.0])
-    monkeypatch.setattr(routes.time, "monotonic", lambda: next(times))
-
     alerts = []
-    monkeypatch.setattr(routes, "send_alert", lambda event, payload: alerts.append((event, payload)))
+    monkeypatch.setattr(
+        routes, "send_alert", lambda event, payload: alerts.append((event, payload))
+    )
     monkeypatch.setenv("SLO_JOB_SEC", "1")
 
-    routes._run_marketing_campaign_job("job-2")
+    store = _prepare_job_store("job-2")
+    times = iter([0.0, 0.0, 2.0])
 
-    assert ("latency_slo_miss", {"job_id": "job-2", "duration_sec": 2.0, "threshold_sec": 1.0}) in alerts
-    assert routes.JOBS["job-2"]["status"] == "done"
+    def fake_monotonic():
+        try:
+            return next(times)
+        except StopIteration:  # pragma: no cover - defensive for extra calls
+            return 2.0
+
+    monkeypatch.setattr(routes.time, "monotonic", fake_monotonic)
+    asyncio.run(routes._run_marketing_campaign_job(store, "job-2"))
+
+    assert (
+        "latency_slo_miss",
+        {"job_id": "job-2", "duration_sec": 2.0, "threshold_sec": 1.0},
+    ) in alerts
+    job = asyncio.run(store.get("job-2"))
+    assert job is not None and job["status"] == "done"

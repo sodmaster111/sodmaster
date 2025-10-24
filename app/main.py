@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request, Response
 
 from app.cgo.routes import router as cgo_router
+from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
@@ -38,23 +39,25 @@ app = FastAPI(
         "делегирования задач департаментам CrewAI."
     ),
 )
+app.state.job_store = get_job_store()
 
 
-def _create_job_store() -> JobStore:
-    redis_url = os.environ.get("REDIS_URL", "").strip()
-    if redis_url:
-        try:
-            store = RedisJobStore(redis_url)
-            logging.info("Using RedisJobStore")
-            return store
-        except Exception:  # pragma: no cover - logged for observability
-            logging.exception("Failed to initialise RedisJobStore, falling back")
+@app.on_event("startup")
+async def ensure_job_store_connection() -> None:
+    """Verify the configured job store is ready before serving requests."""
 
-    logging.info("Using InMemoryJobStore")
-    return InMemoryJobStore()
-
-
-app.state.job_store = _create_job_store()
+    job_store = app.state.job_store
+    try:
+        await job_store.ping()
+    except Exception:  # pragma: no cover - logged for observability
+        logging.exception("Job store ping failed; switching to in-memory store")
+        fallback = InMemoryJobStore()
+        app.state.job_store = fallback
+        await fallback.ping()
+        logging.info("redis=unavailable; using in-memory job store")
+    else:
+        if isinstance(job_store, RedisJobStore):
+            logging.info("redis=connected")
 
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
