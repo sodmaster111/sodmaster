@@ -16,13 +16,11 @@ from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
-from app.root import router as root_router
+from app.root.routes import router as root_router
 from app.services.tasks import run_crew_task, task_results
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-
-logger = logging.getLogger(__name__)
 
 GIT_SHA = os.environ.get("GIT_SHA", "unknown")
 BUILD_TIME = datetime.utcnow().isoformat() + "Z"
@@ -92,7 +90,7 @@ async def observe_requests(request: Request, call_next):
 async def method_not_allowed_handler(
     request: Request, exc: StarletteHTTPException
 ) -> Response:
-    """Return a structured JSON response when a disallowed method is used."""
+    """Return a consistent JSON payload and keep logs quiet for 405 errors."""
 
     if exc.status_code != status.HTTP_405_METHOD_NOT_ALLOWED:
         return await http_exception_handler(request, exc)
@@ -104,6 +102,7 @@ async def method_not_allowed_handler(
         if allow_header
         else []
     )
+
     if request.method == "OPTIONS":
         cors_methods = list(dict.fromkeys(allowed_methods + ["OPTIONS"]))
         allow_headers = request.headers.get("access-control-request-headers", "*")
@@ -115,25 +114,14 @@ async def method_not_allowed_handler(
         if allowed_methods:
             response_headers["Allow"] = ", ".join(allowed_methods)
         return Response(status_code=status.HTTP_200_OK, headers=response_headers)
-    preferred_method = next((method for method in allowed_methods if method != request.method), None)
-    if preferred_method is None and allowed_methods:
-        preferred_method = allowed_methods[0]
-    detail = (
-        f"Use {preferred_method} {request.url.path}"
-        if preferred_method
-        else "Requested method is not allowed"
-    )
 
-    logger.warning(
-        "method_not_allowed",
-        extra={"path": request.url.path, "method": request.method, "allowed": allowed_methods},
-    )
+    logging.getLogger("uvicorn.error").debug("405 %s %s", request.method, request.url.path)
 
     response_headers = {"Allow": ", ".join(allowed_methods)} if allowed_methods else None
 
     return JSONResponse(
         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        content={"error": "method_not_allowed", "detail": detail},
+        content={"error": "method_not_allowed", "detail": f"use one of: {allowed_methods}"},
         headers=response_headers,
     )
 
