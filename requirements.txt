@@ -11,3 +11,4 @@ crewai_tools>=0.75.0     # Пакет для стандартных инстру
 Leonardo-Ai-SDK>=6.5.0    # SDK для нашего CGO-AI (генерация изображений)
 pytest
 exa_py           # SDK для Exa (продвинутый поиск для CGO/CTO)
+redis>=5
