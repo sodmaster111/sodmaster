@@ -22,146 +22,302 @@ jobs:
     timeout-minutes: 15
     env:
       SERVICE_URL: ${{ secrets.SERVICE_URL }}
-    strategy:
-      max-parallel: 1
-      matrix:
-        include:
-          - name: healthz
-            method: GET
-            path: /healthz
-          - name: readyz
-            method: GET
-            path: /readyz
-          - name: version
-            method: GET
-            path: /version
-          - name: cgo_submit
-            method: POST
-            path: /api/v1/cgo/run-marketing-campaign
-            body: '{}'
-          - name: a2a_submit
-            method: POST
-            path: /a2a/command
-            body: '{"source":"external-probe","target":"ops","command":"ping","payload":{}}'
-          - name: job_status
-            method: GET
-            path: /job_status
     steps:
-      - name: Prepare workspace
-        run: mkdir -p reports
-
-      - name: Probe ${{ matrix.name }}
-        timeout-minutes: 2
-        env:
-          NAME: ${{ matrix.name }}
-          METHOD: ${{ matrix.method }}
-          PATH: ${{ matrix.path }}
-          BODY: ${{ matrix.body || '' }}
-          SERVICE_URL: ${{ env.SERVICE_URL }}
-        run: |
-          set -o pipefail
-          REPORT_DIR="reports"
-          mkdir -p "$REPORT_DIR"
-          BASE_URL="${SERVICE_URL%/}"
-          URL="${BASE_URL}${PATH}"
-          RESPONSE_FILE="$REPORT_DIR/${NAME}.response.txt"
-          STDERR_FILE="$REPORT_DIR/${NAME}.stderr.log"
-
-          CURL_COMMON=(
-            --silent
-            --show-error
-            --location
-            --retry 3
-            --retry-delay 5
-            --retry-all-errors
-            --connect-timeout 5
-            --max-time 20
-            --write-out '%{http_code}'
-            --output "$RESPONSE_FILE"
-          )
-
-          if [ "$METHOD" = "POST" ]; then
-            HTTP_CODE=$(curl "${CURL_COMMON[@]}" --header 'Content-Type: application/json' --data "$BODY" --request POST "$URL" 2>"$STDERR_FILE")
-          elif [ "$METHOD" = "GET" ]; then
-            HTTP_CODE=$(curl "${CURL_COMMON[@]}" "$URL" 2>"$STDERR_FILE")
-          else
-            HTTP_CODE=$(curl "${CURL_COMMON[@]}" --request "$METHOD" "$URL" 2>"$STDERR_FILE")
-          fi
-          CURL_EXIT=$?
-
-          printf '%s\n' "${HTTP_CODE}" > "$REPORT_DIR/${NAME}.status"
-
-          cat <<JSON > "$REPORT_DIR/${NAME}.json"
-          {
-            "name": "${NAME}",
-            "method": "${METHOD}",
-            "path": "${PATH}",
-            "url": "${URL}",
-            "http_code": ${HTTP_CODE:-0},
-            "curl_exit_code": ${CURL_EXIT},
-            "response_file": "${NAME}.response.txt",
-            "stderr_file": "${NAME}.stderr.log",
-            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-          JSON
-
-          if [ $CURL_EXIT -ne 0 ]; then
-            echo "curl exited with status $CURL_EXIT" >&2
-          fi
-
-          if [ "${HTTP_CODE}" = "405" ]; then
-            case "$NAME" in
-              cgo_submit)
-                echo "Hint: CGO endpoint expects POST /api/v1/cgo/run-marketing-campaign" >&2
-                ;;
-              a2a_submit)
-                echo "Hint: A2A endpoint expects POST /a2a/command" >&2
-                ;;
-              *)
-                echo "Received 405 for ${METHOD} ${PATH}; verify the allowed HTTP method" >&2
-                ;;
-            esac
-          fi
-
-      - name: Aggregate report
-        if: ${{ always() }}
+      - name: Run external probe
         run: |
           python <<'PY'
 import json
 import os
+import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
-reports = Path('reports')
-entries = []
-for probe_file in sorted(reports.glob('*.json')):
-    if probe_file.name == 'report.json':
-        continue
-    with probe_file.open() as fh:
-        data = json.load(fh)
-    response_path = reports / data.get('response_file', '')
-    if response_path.exists():
-        preview = response_path.read_text(errors='replace')[:500]
-        data['response_preview'] = preview
-    entries.append(data)
+service_url = os.environ["SERVICE_URL"].rstrip("/")
+reports_dir = Path("reports")
+reports_dir.mkdir(parents=True, exist_ok=True)
 
-report_path = reports / 'report.json'
-report_path.write_text(json.dumps({"probes": entries}, indent=2))
+entries = []
+entries_by_name = {}
+
+
+def _write_entry(entry: dict, response_text: str = "") -> None:
+    preview = response_text[:1000]
+    entry["response_preview"] = preview
+    (reports_dir / f"{entry['name']}.json").write_text(json.dumps(entry, indent=2))
+    (reports_dir / f"{entry['name']}.response.txt").write_text(response_text)
+
+
+def _register(entry: dict, response_text: str = "") -> dict:
+    entries.append(entry)
+    entries_by_name[entry["name"]] = entry
+    _write_entry(entry, response_text)
+    return entry
+
+
+def _refresh_entry(entry: dict) -> None:
+    path = reports_dir / f"{entry['name']}.json"
+    path.write_text(json.dumps(entry, indent=2))
+
+
+def run_probe(name: str, method: str, path: str, *, body: dict | None = None, expected_status: int | None = None, timeout: int = 20) -> dict:
+    url = f"{service_url}{path}"
+    data = None
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+
+    request = urllib.request.Request(url, data=data, method=method)
+    if body is not None:
+        request.add_header("Content-Type", "application/json")
+
+    started = time.perf_counter()
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    response_bytes = b""
+    headers = {}
+    http_code: int | None = None
+    error_message: str | None = None
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            http_code = response.getcode()
+            response_bytes = response.read()
+            headers = dict(response.headers.items())
+    except urllib.error.HTTPError as exc:
+        http_code = exc.code
+        response_bytes = exc.read()
+        headers = dict(exc.headers.items()) if exc.headers else {}
+        error_message = f"HTTP {exc.code}"
+    except Exception as exc:  # pragma: no cover - network level failures are unexpected in CI
+        duration_ms = int((time.perf_counter() - started) * 1000)
+        entry = {
+            "name": name,
+            "method": method,
+            "path": path,
+            "url": url,
+            "status": "error",
+            "http_code": None,
+            "duration_ms": duration_ms,
+            "timestamp": timestamp,
+            "error": str(exc),
+        }
+        return _register(entry)
+
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    response_text = response_bytes.decode("utf-8", errors="replace")
+
+    try:
+        response_json = json.loads(response_text) if response_text else None
+    except json.JSONDecodeError:
+        response_json = None
+
+    ok = http_code is not None and 200 <= http_code < 300
+    status = "ok" if ok else "error"
+
+    if expected_status is not None and http_code != expected_status:
+        status = "error"
+        error_message = (error_message or "") + f" (expected HTTP {expected_status})"
+
+    entry = {
+        "name": name,
+        "method": method,
+        "path": path,
+        "url": url,
+        "status": status,
+        "http_code": http_code,
+        "duration_ms": duration_ms,
+        "timestamp": timestamp,
+        "headers": headers,
+        "response_json": response_json,
+    }
+
+    if error_message:
+        entry["error"] = error_message.strip()
+
+    return _register(entry, response_text)
+
+
+def _skipped_entry(name: str, method: str, path: str, reason: str) -> dict:
+    entry = {
+        "name": name,
+        "method": method,
+        "path": path,
+        "url": f"{service_url}{path}",
+        "status": "skipped",
+        "http_code": None,
+        "duration_ms": 0,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "note": reason,
+    }
+    return _register(entry)
+
+
+# Core readiness endpoints
+core_checks = [
+    ("healthz", "GET", "/healthz"),
+    ("readyz", "GET", "/readyz"),
+    ("version", "GET", "/version"),
+]
+for name, method, path in core_checks:
+    run_probe(name, method, path, expected_status=200)
+
+
+# CGO flow
+cgo_submit = run_probe(
+    "cgo_submit",
+    "POST",
+    "/api/v1/cgo/run-marketing-campaign",
+    body={},
+    expected_status=202,
+)
+
+cgo_job_id = None
+if cgo_submit.get("status") == "ok":
+    cgo_payload = cgo_submit.get("response_json") or {}
+    cgo_job_id = cgo_payload.get("job_id")
+    if cgo_job_id:
+        cgo_submit["job_id"] = cgo_job_id
+        _refresh_entry(cgo_submit)
+    if cgo_job_id:
+        poll_entry = run_probe(
+            "cgo_poll",
+            "GET",
+            f"/api/v1/cgo/jobs/{cgo_job_id}",
+            expected_status=200,
+        )
+        poll_entry["job_id"] = cgo_job_id
+        _refresh_entry(poll_entry)
+    else:
+        _skipped_entry(
+            "cgo_poll",
+            "GET",
+            "/api/v1/cgo/jobs/<unknown>",
+            "CGO submission did not return job_id",
+        )
+else:
+    _skipped_entry(
+        "cgo_poll",
+        "GET",
+        "/api/v1/cgo/jobs/<unknown>",
+        "CGO submission failed",
+    )
+
+
+# A2A flow
+a2a_payload = {
+    "source": "external-probe",
+    "target": "ops",
+    "command": "ping",
+    "payload": {},
+}
+a2a_submit = run_probe(
+    "a2a_submit",
+    "POST",
+    "/a2a/command",
+    body=a2a_payload,
+    expected_status=202,
+)
+
+a2a_job_id = None
+if a2a_submit.get("status") == "ok":
+    a2a_response = a2a_submit.get("response_json") or {}
+    a2a_job_id = a2a_response.get("job_id")
+    if a2a_job_id:
+        a2a_submit["job_id"] = a2a_job_id
+        _refresh_entry(a2a_submit)
+    if a2a_job_id:
+        poll_entry = run_probe(
+            "a2a_poll",
+            "GET",
+            f"/a2a/jobs/{a2a_job_id}",
+            expected_status=200,
+        )
+        poll_entry["job_id"] = a2a_job_id
+        _refresh_entry(poll_entry)
+    else:
+        _skipped_entry(
+            "a2a_poll",
+            "GET",
+            "/a2a/jobs/<unknown>",
+            "A2A submission did not return job_id",
+        )
+else:
+    _skipped_entry(
+        "a2a_poll",
+        "GET",
+        "/a2a/jobs/<unknown>",
+        "A2A submission failed",
+    )
+
+
+report = {
+    "service_url": service_url,
+    "generated_at": datetime.now(timezone.utc).isoformat(),
+    "entries": entries,
+}
+(reports_dir / "report.json").write_text(json.dumps(report, indent=2))
+
+
+def status_icon(entry: dict) -> str:
+    mapping = {
+        "ok": "✅",
+        "error": "❌",
+        "skipped": "⚪️",
+    }
+    return mapping.get(entry.get("status"), "❔")
+
+
+job_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
 
 summary_lines = [
     "## External Service Probe",
     "",
-    "| Name | Method | Path | HTTP | Curl Exit |",
-    "| --- | --- | --- | --- | --- |",
+    f"- Service URL: `{service_url}`",
+    f"- Workflow job: [{job_url}]({job_url})",
+    "",
+    "### Core endpoints",
+    "",
+    "| Endpoint | HTTP | Latency (ms) | Result |",
+    "| --- | --- | --- | --- |",
 ]
-for entry in entries:
-    summary_lines.append(f"| {entry['name']} | {entry['method']} | {entry['path']} | {entry['http_code']} | {entry['curl_exit_code']} |")
 
-summary = "\n".join(summary_lines)
-summary_file = Path(os.environ['GITHUB_STEP_SUMMARY'])
-summary_file.write_text(summary)
+for name in ["healthz", "readyz", "version"]:
+    entry = entries_by_name.get(name, {})
+    summary_lines.append(
+        f"| `{entry.get('path', '-')}` | {entry.get('http_code', '-') or '-'} | {entry.get('duration_ms', '-') or '-'} | {status_icon(entry)} |"
+    )
+
+
+def render_flow(title: str, submit_name: str, poll_name: str) -> None:
+    summary_lines.extend(["", f"### {title}", "", "| Step | HTTP | Latency (ms) | Result |", "| --- | --- | --- | --- |"])
+    for name, label in ((submit_name, "Submit"), (poll_name, "Poll")):
+        entry = entries_by_name.get(name, {})
+        summary_lines.append(
+            f"| {label} ({entry.get('path', '-')}) | {entry.get('http_code', '-') or '-'} | {entry.get('duration_ms', '-') or '-'} | {status_icon(entry)} |"
+        )
+
+
+render_flow("CGO flow", "cgo_submit", "cgo_poll")
+render_flow("A2A flow", "a2a_submit", "a2a_poll")
+
+
+issues = [entry for entry in entries if entry.get("status") not in {"ok"}]
+if issues:
+    summary_lines.extend(["", "### Notes", ""])
+    for entry in issues:
+        detail = entry.get("error") or entry.get("note") or "Check failed"
+        summary_lines.append(f"- **{entry['name']}**: {detail}")
+
+
+summary_path = Path(os.environ.get("GITHUB_STEP_SUMMARY", ""))
+if summary_path:
+    summary_path.write_text("\n".join(summary_lines))
+
 PY
 
       - name: Upload probe report
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: external-probe-report
