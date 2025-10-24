@@ -3,7 +3,7 @@ uvicorn[standard]
 pyautogen
 semantic-kernel
 crewai
-openrouter-client
+langchain-openai
 web3
 btcpay
 

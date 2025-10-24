@@ -1,15 +1,27 @@
-from crewai import Agent, Task, Crew, Process
-from langchain_community.llms import OpenRouter
+import logging
 import os
+
+from crewai import Agent, Task, Crew, Process
+from langchain_openai import ChatOpenAI
 
 # Импорт наших новых инструментов
 from tools.search_tools import scrape_tool, serper_tool, exa_search_tool
 from tools.image_tools import LeonardoImageTool
 
 # Настройка "Мозга" (OpenRouter)
-llm = OpenRouter(
-    api_key=os.environ.get("OPENROUTER_API_KEY"),
-    model_name="anthropic/claude-3-haiku"  # Быстрая модель для CGO
+logger = logging.getLogger(__name__)
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
+
+if not openrouter_api_key:
+    logger.warning(
+        "OPENROUTER_API_KEY is not set. Initializing the OpenRouter client without authentication."
+    )
+
+llm = ChatOpenAI(
+    model=os.getenv("OPENROUTER_MODEL", "anthropic/claude-3-haiku"),
+    api_key=openrouter_api_key or None,
+    base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+    temperature=0.2,
 )
 
 # --- СПЕЦИАЛИСТЫ (AGENTS) CGO-AI ---
