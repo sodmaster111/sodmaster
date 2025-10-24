@@ -1,8 +1,5 @@
 import inspect
 import logging
-import os
-from datetime import datetime
-from platform import python_version
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
@@ -18,22 +15,27 @@ from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.root.routes import router as root_router
 from app.services.tasks import run_crew_task, task_results
+from app.version_info import load_version
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-GIT_SHA = os.environ.get("GIT_SHA", "unknown")
-BUILD_TIME = datetime.utcnow().isoformat() + "Z"
-PYTHON_VERSION = python_version()
+VERSION_INFO = load_version()
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s",
-    PYTHON_VERSION,
-    GIT_SHA,
-    BUILD_TIME,
+    VERSION_INFO["python"],
+    VERSION_INFO["git_sha"],
+    VERSION_INFO["build_time"],
 )
 
-APP_INFO.info({"python": PYTHON_VERSION, "git_sha": GIT_SHA})
+APP_INFO.info(
+    {
+        "python": VERSION_INFO["python"],
+        "git_sha": VERSION_INFO["git_sha"],
+        "build_time": VERSION_INFO["build_time"],
+    }
+)
 
 CRITICAL_DEPENDENCIES_READY = True
 
@@ -142,7 +144,7 @@ def metrics():
 
 @app.get("/version")
 def version():
-    return {"git_sha": GIT_SHA, "build_time": BUILD_TIME, "python": PYTHON_VERSION}
+    return dict(VERSION_INFO)
 
 
 @app.post("/api/v1/cto/run-research")

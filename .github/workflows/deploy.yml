@@ -1,0 +1,52 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  prepare-version-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Capture build metadata
+        run: |
+          export GIT_SHA="${GITHUB_SHA}"
+          export BUILD_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "GIT_SHA=${GIT_SHA}" >> "$GITHUB_ENV"
+          echo "BUILD_TIME=${BUILD_TIME}" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+          import sys
+
+          metadata = {
+              "GIT_SHA": os.environ["GIT_SHA"],
+              "BUILD_TIME": os.environ["BUILD_TIME"],
+              "PY_RUNTIME": sys.version,
+          }
+          path = pathlib.Path("app/version_env.json")
+          path.write_text(json.dumps(metadata))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"PY_RUNTIME={metadata['PY_RUNTIME']}\n")
+          PY
+
+      - name: Upload version metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-env
+          path: app/version_env.json
+          if-no-files-found: error
+
+      - name: Deploy to Render
+        run: |
+          echo "Deploy step placeholder. Ensure the Render service is configured with"
+          echo "GIT_SHA, BUILD_TIME, and PY_RUNTIME environment variables before running."
