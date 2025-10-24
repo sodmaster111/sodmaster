@@ -14,8 +14,7 @@ from app.ops.alerts import send_alert
 
 @pytest.fixture(autouse=True)
 def clear_env(monkeypatch):
-    monkeypatch.delenv("TELEGRAM_WEBHOOK", raising=False)
-    monkeypatch.delenv("SLACK_WEBHOOK", raising=False)
+    monkeypatch.delenv("ALERT_WEBHOOK", raising=False)
     yield
 
 
@@ -47,8 +46,7 @@ def test_send_alert_posts_to_configured_webhooks(monkeypatch, caplog):
         )
         return mock.MagicMock()
 
-    monkeypatch.setenv("TELEGRAM_WEBHOOK", "https://telegram.example")
-    monkeypatch.setenv("SLACK_WEBHOOK", "https://slack.example")
+    monkeypatch.setenv("ALERT_WEBHOOK", "https://alerts.example")
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
 
     delivered = send_alert("job_failed", {"job_id": "abc"})
@@ -56,12 +54,7 @@ def test_send_alert_posts_to_configured_webhooks(monkeypatch, caplog):
     assert delivered is True
     assert payloads == [
         {
-            "url": "https://telegram.example",
-            "data": {"event": "job_failed", "payload": {"job_id": "abc"}},
-            "headers": {"Content-type": "application/json"},
-        },
-        {
-            "url": "https://slack.example",
+            "url": "https://alerts.example",
             "data": {"event": "job_failed", "payload": {"job_id": "abc"}},
             "headers": {"Content-type": "application/json"},
         },
