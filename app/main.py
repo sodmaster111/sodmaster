@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 from datetime import datetime
@@ -7,6 +8,7 @@ import uvicorn
 from fastapi import BackgroundTasks, FastAPI
 
 from app.cgo.routes import router as cgo_router
+from app.infra import InMemoryJobStore, JobStore, RedisJobStore
 from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
 
@@ -34,8 +36,38 @@ app = FastAPI(
     ),
 )
 
+
+def _create_job_store() -> JobStore:
+    redis_url = os.environ.get("REDIS_URL", "").strip()
+    if redis_url:
+        try:
+            store = RedisJobStore(redis_url)
+            logging.info("Using RedisJobStore")
+            return store
+        except Exception:  # pragma: no cover - logged for observability
+            logging.exception("Failed to initialise RedisJobStore, falling back")
+
+    logging.info("Using InMemoryJobStore")
+    return InMemoryJobStore()
+
+
+app.state.job_store = _create_job_store()
+
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
+
+
+@app.on_event("shutdown")
+async def _shutdown_job_store() -> None:
+    job_store = getattr(app.state, "job_store", None)
+    if job_store is None:
+        return
+
+    close = getattr(job_store, "close", None)
+    if callable(close):  # pragma: no branch - minimal branching for coverage
+        result = close()
+        if inspect.isawaitable(result):
+            await result
 
 
 @app.get("/")
