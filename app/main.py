@@ -16,6 +16,7 @@ from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
+from app.root import router as root_router
 from app.services.tasks import run_crew_task, task_results
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -73,6 +74,7 @@ async def ensure_job_store_connection() -> None:
         if isinstance(job_store, RedisJobStore):
             logging.info("redis=connected")
 
+app.include_router(root_router)
 app.include_router(a2a_router, prefix="/a2a")
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
@@ -134,25 +136,6 @@ async def method_not_allowed_handler(
         content={"error": "method_not_allowed", "detail": detail},
         headers=response_headers,
     )
-
-
-@app.get("/")
-def read_root():
-    # Проверка, что API-ключи загружены
-    openrouter_key = os.environ.get("OPENROUTER_API_KEY", "NOT_SET")
-    leonardo_key = os.environ.get("LEONARDO_API_KEY", "NOT_SET")
-    return {
-        "status": "Sodmaster C-Unit MAF Gateway is online.",
-        "openrouter_status": "LOADED" if openrouter_key != "NOT_SET" else "MISSING",
-        "leonardo_status": "LOADED" if leonardo_key != "NOT_SET" else "MISSING",
-        "exa_status": "LOADED"
-        if os.environ.get("EXA_API_KEY", "NOT_SET") != "NOT_SET"
-        else "MISSING",
-        "serper_status": "LOADED"
-        if os.environ.get("SERPER_API_KEY", "NOT_SET") != "NOT_SET"
-        else "MISSING",
-    }
-
 
 @app.get("/healthz")
 def healthz():
