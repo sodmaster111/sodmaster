@@ -5,7 +5,10 @@ from datetime import datetime
 from platform import python_version
 
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI, Request, Response
+from fastapi import BackgroundTasks, FastAPI, Request, Response, status
+from fastapi.exception_handlers import http_exception_handler
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.a2a import router as a2a_router
 from app.cgo.routes import router as cgo_router
@@ -14,8 +17,11 @@ from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.services.tasks import run_crew_task, task_results
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+logger = logging.getLogger(__name__)
 
 GIT_SHA = os.environ.get("GIT_SHA", "unknown")
 BUILD_TIME = datetime.utcnow().isoformat() + "Z"
@@ -41,6 +47,13 @@ app = FastAPI(
     ),
 )
 app.state.job_store = get_job_store()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -71,6 +84,56 @@ async def observe_requests(request: Request, call_next):
     path = request.url.path
     record_http_request(path)
     return response
+
+
+@app.exception_handler(StarletteHTTPException)
+async def method_not_allowed_handler(
+    request: Request, exc: StarletteHTTPException
+) -> Response:
+    """Return a structured JSON response when a disallowed method is used."""
+
+    if exc.status_code != status.HTTP_405_METHOD_NOT_ALLOWED:
+        return await http_exception_handler(request, exc)
+
+    headers = dict(exc.headers or {})
+    allow_header = headers.get("Allow") or headers.get("allow")
+    allowed_methods = (
+        [method.strip() for method in allow_header.split(",") if method.strip()]
+        if allow_header
+        else []
+    )
+    if request.method == "OPTIONS":
+        cors_methods = list(dict.fromkeys(allowed_methods + ["OPTIONS"]))
+        allow_headers = request.headers.get("access-control-request-headers", "*")
+        response_headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": ", ".join(cors_methods) if cors_methods else "OPTIONS",
+            "Access-Control-Allow-Headers": allow_headers or "*",
+        }
+        if allowed_methods:
+            response_headers["Allow"] = ", ".join(allowed_methods)
+        return Response(status_code=status.HTTP_200_OK, headers=response_headers)
+    preferred_method = next((method for method in allowed_methods if method != request.method), None)
+    if preferred_method is None and allowed_methods:
+        preferred_method = allowed_methods[0]
+    detail = (
+        f"Use {preferred_method} {request.url.path}"
+        if preferred_method
+        else "Requested method is not allowed"
+    )
+
+    logger.warning(
+        "method_not_allowed",
+        extra={"path": request.url.path, "method": request.method, "allowed": allowed_methods},
+    )
+
+    response_headers = {"Allow": ", ".join(allowed_methods)} if allowed_methods else None
+
+    return JSONResponse(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        content={"error": "method_not_allowed", "detail": detail},
+        headers=response_headers,
+    )
 
 
 @app.get("/")

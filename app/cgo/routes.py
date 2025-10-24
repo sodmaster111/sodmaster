@@ -2,10 +2,10 @@ import logging
 import os
 import time
 from time import perf_counter
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 from uuid import uuid4
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from tenacity import RetryCallState, retry, stop_after_attempt, wait_exponential
@@ -21,6 +21,12 @@ router = APIRouter()
 
 class MarketingCampaignRequest(BaseModel):
     job_id: Optional[str] = None
+
+
+class MarketingCampaignStatus(BaseModel):
+    job_id: str
+    status: str
+    result: Optional[Dict[str, Any]] = None
 
 
 def _resolve_slo_threshold() -> float:
@@ -102,12 +108,16 @@ async def _run_marketing_campaign_job(job_store: JobStore, job_id: str) -> None:
     logger.info({"event": "cgo_done", "job_id": job_id, "status": "done"})
 
 
-@router.post("/run-marketing-campaign")
+@router.post(
+    "/run-marketing-campaign",
+    response_model=MarketingCampaignStatus,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def run_marketing_campaign(
     request: Request,
     background_tasks: BackgroundTasks,
     payload: Optional[MarketingCampaignRequest] = None,
-):
+) -> Union[MarketingCampaignStatus, JSONResponse]:
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
 
     job_store: JobStore = request.app.state.job_store
@@ -118,20 +128,22 @@ async def run_marketing_campaign(
     if requested_job_id:
         existing_job = await job_store.get(requested_job_id)
         if existing_job is not None:
-            response_payload: Dict[str, Any] = {
-                "status": existing_job.get("status"),
-                "job_id": requested_job_id,
-            }
-            if "result" in existing_job:
-                response_payload["result"] = existing_job.get("result")
-            return JSONResponse(status_code=200, content=response_payload)
+            response_payload = MarketingCampaignStatus(
+                status=existing_job.get("status", "unknown"),
+                job_id=requested_job_id,
+                result=existing_job.get("result"),
+            )
+            return JSONResponse(
+                status_code=status.HTTP_200_OK,
+                content=response_payload.model_dump(),
+            )
 
     job_id = requested_job_id or str(uuid4())
     await job_store.create(
         job_id,
         {
             "type": "marketing_campaign",
-            "payload": payload.dict(exclude_none=True),
+            "payload": payload.model_dump(exclude_none=True),
         },
     )
     await job_store.set_status(job_id, "running", None)
@@ -139,17 +151,22 @@ async def run_marketing_campaign(
 
     background_tasks.add_task(_run_marketing_campaign_job, job_store, job_id)
 
-    return JSONResponse(
-        status_code=202,
-        content={"status": "accepted", "job_id": job_id},
-    )
+    return MarketingCampaignStatus(job_id=job_id, status="accepted")
 
 
-@router.get("/jobs/{job_id}")
-async def get_job_status(request: Request, job_id: str) -> Dict[str, Any]:
+@router.get(
+    "/jobs/{job_id}",
+    response_model=MarketingCampaignStatus,
+    status_code=status.HTTP_200_OK,
+)
+async def get_job_status(request: Request, job_id: str) -> MarketingCampaignStatus:
     job_store: JobStore = request.app.state.job_store
     job = await job_store.get(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return {"status": job.get("status"), "result": job.get("result")}
+    return MarketingCampaignStatus(
+        job_id=job_id,
+        status=job.get("status", "unknown"),
+        result=job.get("result"),
+    )
