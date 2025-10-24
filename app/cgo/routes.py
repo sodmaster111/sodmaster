@@ -1,6 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks
 
-from agents.cgo_crew import cgo_crew
 from app.services.tasks import run_crew_task, task_results
 
 router = APIRouter()
@@ -9,6 +8,8 @@ router = APIRouter()
 @router.post("/run-marketing-campaign")
 async def run_marketing_campaign(background_tasks: BackgroundTasks):
     """Эндпоинт для CGO-AI (MAF), чтобы запустить CGO-Crew (CrewAI)."""
+    from agents.cgo_crew import cgo_crew
+
     task_id = "cgo_task_latest"
     task_results[task_id] = {"status": "running"}
 

@@ -1,11 +1,29 @@
+import logging
 import os
+from datetime import datetime
+from platform import python_version
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI
 
-from agents.cto_crew import cto_crew
 from app.cgo.routes import router as cgo_router
 from app.services.tasks import run_crew_task, task_results
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+GIT_SHA = os.environ.get("GIT_SHA", "unknown")
+BUILD_TIME = datetime.utcnow().isoformat() + "Z"
+PYTHON_VERSION = python_version()
+
+logging.info(
+    "Application startup | python_version=%s git_sha=%s build_time=%s",
+    PYTHON_VERSION,
+    GIT_SHA,
+    BUILD_TIME,
+)
+
+CRITICAL_DEPENDENCIES_READY = True
+
 
 app = FastAPI(
     title="Sodmaster C-unit (MAF Gateway v2.0)",
@@ -36,9 +54,26 @@ def read_root():
     }
 
 
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def readyz():
+    return {"status": "ok", "dependencies_ready": CRITICAL_DEPENDENCIES_READY}
+
+
+@app.get("/version")
+def version():
+    return {"git_sha": GIT_SHA, "build_time": BUILD_TIME, "python": PYTHON_VERSION}
+
+
 @app.post("/api/v1/cto/run-research")
 async def run_cto_task(background_tasks: BackgroundTasks):
     """Эндпоинт для CTO-AI (MAF), чтобы запустить CTO-Crew (CrewAI)."""
+    from agents.cto_crew import cto_crew
+
     task_id = "cto_task_latest"
     task_results[task_id] = {"status": "running"}
 
