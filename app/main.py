@@ -6,7 +6,9 @@ from pathlib import Path
 from fastapi import BackgroundTasks, FastAPI, Request, Response, WebSocket, status
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from app.a2a import router as a2a_router
 from app.auth.google_oauth import router as google_auth_router
@@ -59,6 +61,9 @@ app = FastAPI(
         "делегирования задач департаментам CrewAI."
     ),
 )
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(health_router)
 
@@ -157,6 +162,11 @@ app.include_router(treasury_router)
 app.include_router(google_auth_router)
 app.include_router(telegram_auth_router)
 app.include_router(users_router)
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.middleware("http")
