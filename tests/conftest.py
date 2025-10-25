@@ -14,6 +14,12 @@ except ModuleNotFoundError:  # pragma: no cover - fallback when FastAPI deps abs
 os.environ.setdefault("OPENAI_API_KEY", "test-openai-key")
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Register project-specific pytest configuration options."""
+
+    parser.addini("asyncio_mode", "Configure asyncio event loop policy", default="auto")
+
+
 @pytest.fixture()
 def client():
     """Provide a FastAPI TestClient for API tests."""
