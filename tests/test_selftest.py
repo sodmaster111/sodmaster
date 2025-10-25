@@ -1,3 +1,5 @@
+import asyncio
+import importlib
 import sys
 from pathlib import Path
 
@@ -22,6 +24,7 @@ def test_selftest_endpoint():
     assert payload["meta"]["overall_status"] == "ok"
     assert payload["meta"]["job_store"] in {"memory", "redis"}
     assert payload["meta"]["redis_connected"] in {True, False}
+    assert payload["meta"]["crew_tools"] in {"available", "stub"}
 
     for key in (
         "healthz",
@@ -41,3 +44,20 @@ def test_selftest_endpoint():
     assert payload["cgo_submit"]["method"] == "POST"
     assert payload["a2a_submit"]["status"] == "ok"
     assert payload["a2a_submit"]["method"] == "POST"
+
+
+def test_selftest_handles_missing_crewai_tools(monkeypatch):
+    """Selftest remains successful even when crewai_tools dependency is missing."""
+
+    import app.ops.selftest as selftest_module
+
+    with monkeypatch.context() as patcher:
+        patcher.setitem(sys.modules, "crewai_tools", None)
+        selftest_module = importlib.reload(selftest_module)
+        report = asyncio.run(selftest_module.run_selftest(app))
+
+    # Reload the module to restore the default import behaviour for subsequent tests.
+    importlib.reload(selftest_module)
+
+    assert report["meta"]["overall_status"] == "ok"
+    assert report["meta"]["crew_tools"] == "stub"
