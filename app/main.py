@@ -22,6 +22,7 @@ from app.root.routes import router as root_router
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
 from app.subscription import router as subscription_router
+from app.treasury import router as treasury_router
 from app.subscription.repository import SubscriptionRepository
 from app.version_info import load_version
 from app.fundraise.service import FundraiseTracker
@@ -86,6 +87,7 @@ app.state.subscription_repo = subscription_repo
 app.state.job_store_backend = job_store_backend
 app.state.redis_connected = isinstance(job_store, RedisJobStore)
 app.state.fundraise_tracker = fundraise_tracker
+app.state.treasury_whitelist = {}
 
 app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(
@@ -131,6 +133,7 @@ app.include_router(mktg_router, prefix="/api/v1/mktg")
 app.include_router(miniapp_router)
 app.include_router(subscription_router)
 app.include_router(fundraise_router, prefix="/api/v1/fundraise")
+app.include_router(treasury_router)
 
 
 @app.middleware("http")
