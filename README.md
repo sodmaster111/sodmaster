@@ -20,3 +20,10 @@ The Sodmaster Corporation
 
 The site deployment workflow (`.github/workflows/site-deploy.yml`) is disabled by default.
 To enable it, add a repository secret named `ENABLE_SITE_CI` with the value `true`.
+
+## SEO
+
+- The marketing site ships `robots.txt` via `src/pages/robots.txt.ts` and generates `sitemap-index.xml`
+  through the Astro sitemap integration.
+- Run `node tests/site_seo_build.mjs` to verify the build emits both assets and that `robots.txt`
+  links to the sitemap. This script is executed in CI as part of the default test suite.

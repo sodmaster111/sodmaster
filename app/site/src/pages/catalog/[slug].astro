@@ -2,12 +2,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import products from '../../data/products.json';
 
-const { slug } = Astro.params;
-const product = products.find((item) => item.slug === slug);
-
-if (!product) {
-  throw new Error(`Product ${slug} not found`);
+export function getStaticPaths() {
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product }
+  }));
 }
+
+const { product } = Astro.props;
 ---
 <BaseLayout title={`${product.title} | Sodmaster`} description={product.seo?.description ?? product.summary}>
   <article class="product-detail">

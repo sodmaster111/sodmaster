@@ -163,6 +163,34 @@ for name, method, path in core_checks:
     run_probe(name, method, path, expected_status=200)
 
 
+# SEO endpoints
+run_probe(
+    "robots_txt",
+    "GET",
+    "/robots.txt",
+    expected_status=200,
+)
+
+sitemap_candidates = [
+    ("sitemap_index", "/sitemap-index.xml"),
+    ("sitemap_xml", "/sitemap.xml"),
+]
+
+sitemap_entry = None
+for index, (name, path) in enumerate(sitemap_candidates):
+    entry = run_probe(name, "GET", path, expected_status=200)
+    if entry.get("status") == "ok":
+        sitemap_entry = entry
+        break
+    if entry.get("http_code") == 404 and index < len(sitemap_candidates) - 1:
+        entry["status"] = "skipped"
+        entry["note"] = "Not found; trying alternate sitemap path"
+        _refresh_entry(entry)
+        continue
+    sitemap_entry = entry
+    break
+
+
 # CGO flow
 cgo_submit = run_probe(
     "cgo_submit",
@@ -287,6 +315,15 @@ for name in ["healthz", "readyz", "version"]:
     summary_lines.append(
         f"| `{entry.get('path', '-')}` | {entry.get('http_code', '-') or '-'} | {entry.get('duration_ms', '-') or '-'} | {status_icon(entry)} |"
     )
+
+
+summary_lines.extend(["", "### SEO endpoints", "", "| Endpoint | HTTP | Latency (ms) | Result |", "| --- | --- | --- | --- |"])
+for name in ["robots_txt", "sitemap_index", "sitemap_xml"]:
+    entry = entries_by_name.get(name)
+    if entry:
+        summary_lines.append(
+            f"| `{entry.get('path', '-')}` | {entry.get('http_code', '-') or '-'} | {entry.get('duration_ms', '-') or '-'} | {status_icon(entry)} |"
+        )
 
 
 def render_flow(title: str, submit_name: str, poll_name: str) -> None:
