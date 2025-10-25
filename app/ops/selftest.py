@@ -33,6 +33,8 @@ async def run_selftest(app: FastAPI) -> Dict[str, Any]:
     monotonic_started = time.monotonic()
     report: Dict[str, Any] = {}
 
+    crew_tools_status = _detect_crew_tools_status()
+
     transport = ASGITransport(app=app)
 
     async with AsyncClient(transport=transport, base_url="http://selftest") as client:
@@ -79,11 +81,29 @@ async def run_selftest(app: FastAPI) -> Dict[str, Any]:
         "duration_ms": int((time.monotonic() - monotonic_started) * 1000),
         "job_store": store_backend,
         "redis_connected": redis_connected,
+        "crew_tools": crew_tools_status,
     }
 
     logger.info("Self-test execution completed", extra={"overall_status": overall_status})
 
     return report
+
+
+def _detect_crew_tools_status() -> str:
+    """Return availability flag for the optional crewai_tools dependency."""
+
+    module = sys.modules.get("crewai_tools")
+    if module is None:
+        try:
+            import crewai_tools  # type: ignore  # noqa: F401 - import used for availability detection
+        except Exception:  # pragma: no cover - defensive guard for optional dependency
+            return "stub"
+        module = sys.modules.get("crewai_tools")
+
+    if module is None:
+        return "stub"
+
+    return "available"
 
 
 async def _resolve_job_store_status(app: FastAPI) -> tuple[str, bool]:

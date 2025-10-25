@@ -1,7 +1,34 @@
+import logging
 import os
 from typing import Any, Callable, Iterable, Optional
 
-from crewai_tools import BaseTool
+logger = logging.getLogger(__name__)
+
+try:  # pragma: no cover - exercised indirectly via integration tests
+    import crewai_tools as ct
+except Exception:  # pragma: no cover - optional dependency guard
+    ct = None
+    logger.warning("crew_ai_tools_unavailable")
+if ct is not None:
+    BaseTool = ct.BaseTool
+    CREW_TOOLS_AVAILABLE = True
+else:
+
+    class BaseTool:  # type: ignore[override] - minimal stub
+        name: str = "crew_ai_stub_base_tool"
+        description: str = "Stub for crewai tools when dependency is unavailable."
+
+        def __call__(self, *args, **kwargs):
+            return self._run(*args, **kwargs)
+
+        async def _arun(self, *args, **kwargs):  # pragma: no cover - sync flows dominate
+            return self._run(*args, **kwargs)
+
+        def _run(self, *args, **kwargs):  # pragma: no cover - to be overridden
+            raise NotImplementedError
+
+    CREW_TOOLS_AVAILABLE = False
+
 from leonardo_ai_sdk import LeonardoAiSDK
 
 SDK = LeonardoAiSDK(api_key=os.environ.get("LEONARDO_API_KEY", ""))
