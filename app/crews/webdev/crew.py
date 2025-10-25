@@ -76,9 +76,10 @@ class WebDevCrew:
         self.metrics.job_started()
         try:
             plan = self._plan(payload)
-            artifacts = self._implement(payload)
+            scaffold, page_artifacts = self._scaffold(payload)
+            artifacts = self._implement(page_artifacts, payload)
             validation = self._validate()
-            report = self._summarise(plan, artifacts, validation)
+            report = self._commit(plan, scaffold, artifacts, validation)
         except Exception:
             duration = perf_counter() - start
             self.metrics.job_failed(duration)
@@ -102,10 +103,28 @@ class WebDevCrew:
         role_notes = [role.as_bullet_points() for role in self.roles]
         return {"navigation": navigation, "roles": role_notes}
 
-    def _implement(self, payload: WebDevPayload) -> Dict[str, Any]:
-        generated_pages: List[str] = []
+    def _scaffold(self, payload: WebDevPayload) -> tuple[Dict[str, Any], List[PageArtifact]]:
+        artifacts: List[PageArtifact] = []
+        scaffold_pages: List[Dict[str, Any]] = []
         for page in payload.pages:
             artifact = page.to_artifact()
+            artifacts.append(artifact)
+            path = self.repo_writer.scaffold_page(artifact)
+            scaffold_pages.append(
+                {
+                    "slug": artifact.slug,
+                    "path": str(path.relative_to(self.project_root)),
+                    "format": artifact.extension.lstrip("."),
+                }
+            )
+        scaffold = {"pages": scaffold_pages}
+        return scaffold, artifacts
+
+    def _implement(
+        self, artifacts: List[PageArtifact], payload: WebDevPayload
+    ) -> Dict[str, Any]:
+        generated_pages: List[str] = []
+        for artifact in artifacts:
             path = self.repo_writer.write_page(artifact)
             generated_pages.append(str(path.relative_to(self.project_root)))
 
@@ -131,9 +150,10 @@ class WebDevCrew:
         ]
         return {"build": build_result, "broken_links": broken_links}
 
-    def _summarise(
+    def _commit(
         self,
         plan: Dict[str, Any],
+        scaffold: Dict[str, Any],
         artifacts: Dict[str, Any],
         validation: Dict[str, Any],
     ) -> Dict[str, Any]:
@@ -150,6 +170,7 @@ class WebDevCrew:
             summary_lines.append("Link checker passed with no issues")
         return {
             "plan": plan,
+            "scaffold": scaffold,
             "artifacts": artifacts,
             "validation": validation,
             "summary": "\n".join(summary_lines),

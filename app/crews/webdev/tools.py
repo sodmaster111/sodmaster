@@ -19,7 +19,7 @@ from app.metrics import (
 from app.site.helpers.content import (
     PageArtifact,
     ensure_page_path,
-    render_astro_page,
+    render_page_source,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,18 @@ class RepoWriterTool:
         self.pages_root = project_root / "src" / "pages"
         self.data_root = project_root / "src" / "data"
 
+    def scaffold_page(self, artifact: PageArtifact) -> Path:
+        """Ensure directories for a page exist and report the target path."""
+
+        target_path = ensure_page_path(
+            self.pages_root, artifact.slug, artifact.extension
+        )
+        logger.info(
+            "WebdevRepoWriter | scaffold page",
+            extra={"slug": artifact.slug, "path": str(target_path)},
+        )
+        return target_path
+
     def write_page(self, artifact: PageArtifact) -> Path:
         """Create or update an Astro page based on the provided artifact."""
 
@@ -40,7 +52,7 @@ class RepoWriterTool:
             self.pages_root, artifact.slug, artifact.extension
         )
         target_path.write_text(
-            render_astro_page(artifact, target_path), encoding="utf-8"
+            render_page_source(artifact, target_path), encoding="utf-8"
         )
         logger.info("WebdevRepoWriter | wrote page", extra={"path": str(target_path)})
         return target_path

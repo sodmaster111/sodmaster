@@ -90,19 +90,38 @@ def _format_tags(tags: List[str]) -> str:
     return f"[{values}]"
 
 
+def _page_metadata_lines(artifact: PageArtifact) -> List[str]:
+    meta_lines = [
+        f"title: \"{artifact.title}\"",
+        f"description: \"{artifact.summary()}\"",
+    ]
+    if artifact.canonical_url:
+        meta_lines.append(f"canonical: \"{artifact.canonical_url}\"")
+    if artifact.tags:
+        meta_lines.append(f"tags: {_format_tags(artifact.tags)}")
+    return meta_lines
+
+
+def render_markdown_page(artifact: PageArtifact, target_path: Path) -> str:
+    """Render Markdown content with Astro frontmatter."""
+
+    layout_import = _layout_import_for(target_path, artifact.layout)
+    frontmatter_lines = ["---"]
+    frontmatter_lines.extend(_page_metadata_lines(artifact))
+    frontmatter_lines.append(f"layout: '{layout_import}'")
+    frontmatter_lines.append("---")
+    frontmatter = "\n".join(frontmatter_lines)
+    body = artifact.body.strip() + "\n"
+    return f"{frontmatter}\n\n{body}"
+
+
 def render_astro_page(artifact: PageArtifact, target_path: Path) -> str:
     """Render the Astro source for the provided artifact."""
 
     layout_import = _layout_import_for(target_path, artifact.layout)
-    meta_lines = [
-        "const page = {",
-        f"  title: \"{artifact.title}\"",
-        f"  description: \"{artifact.summary()}\"",
-    ]
-    if artifact.canonical_url:
-        meta_lines.append(f"  canonical: \"{artifact.canonical_url}\"")
-    if artifact.tags:
-        meta_lines.append(f"  tags: {_format_tags(artifact.tags)}")
+    meta_lines = ["const page = {"]
+    for line in _page_metadata_lines(artifact):
+        meta_lines.append(f"  {line}")
     meta_lines.append("};")
     meta_block = "\n".join(meta_lines)
 
@@ -124,6 +143,17 @@ def render_astro_page(artifact: PageArtifact, target_path: Path) -> str:
     )
 
 
+def render_page_source(artifact: PageArtifact, target_path: Path) -> str:
+    """Render Astro or Markdown source depending on the artifact extension."""
+
+    extension = artifact.extension.lower()
+    if extension == ".astro":
+        return render_astro_page(artifact, target_path)
+    if extension in {".md", ".markdown"}:
+        return render_markdown_page(artifact, target_path)
+    raise ValueError(f"Unsupported page extension '{artifact.extension}'")
+
+
 def indent_markdown(markdown: str, prefix: str = "    ") -> str:
     """Indent multiline markdown blocks for Astro child content."""
 
@@ -136,4 +166,6 @@ __all__ = [
     "ensure_page_path",
     "indent_markdown",
     "render_astro_page",
+    "render_markdown_page",
+    "render_page_source",
 ]
