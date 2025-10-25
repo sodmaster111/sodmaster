@@ -6,7 +6,6 @@ crewai>=0.51
 langchain-openai
 web3
 tenacity>=8
-btcpay
 httpx
 crewai-tools>=1.2.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
 leonardo-ai-sdk>=6.5.0   # SDK для нашего CGO-AI (генерация изображений)
