@@ -47,6 +47,12 @@ HTTP_REQUESTS_TOTAL = Counter(
     ["path"],
 )
 
+WAF_BLOCK_TOTAL = Counter(
+    "waf_block_total",
+    "Total number of requests blocked by the application firewall partitioned by path group.",
+    ["path_group"],
+)
+
 APP_INFO = Info("app_info", "Application build and runtime information.")
 
 
@@ -70,6 +76,12 @@ def record_http_request(path: str) -> None:
     """Record a handled HTTP request for the provided path."""
 
     HTTP_REQUESTS_TOTAL.labels(path=path).inc()
+
+
+def record_waf_block(path_group: str) -> None:
+    """Increment counters for blocked requests handled by the WAF layer."""
+
+    WAF_BLOCK_TOTAL.labels(path_group=path_group).inc()
 
 
 def record_audit_event(c_unit: str, severity: str) -> None:

@@ -6,6 +6,8 @@ from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.concurrency import iterate_in_threadpool
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.a2a import router as a2a_router
 from app.audit.service import bootstrap_default_audit_trail
@@ -15,6 +17,7 @@ from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.root.routes import router as root_router
+from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
 from app.version_info import load_version
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -53,9 +56,29 @@ logging.info(
     job_store_backend,
 )
 
+if job_store_backend == "memory":
+    logging.info("Job store persistence disabled; set REDIS_URL to enable persistence")
+
 app.state.job_store = job_store
 app.state.audit_trail = audit_trail
+app.state.job_store_backend = job_store_backend
+app.state.redis_connected = isinstance(job_store, RedisJobStore)
 
+class HeadAsGetMiddleware(BaseHTTPMiddleware):
+    """Translate HEAD requests into GET requests while returning an empty body."""
+
+    async def dispatch(self, request: Request, call_next):
+        if request.method == "HEAD":
+            request.scope["method"] = "GET"
+            response = await call_next(request)
+            response.body_iterator = iterate_in_threadpool(iter(()))
+            response.headers.setdefault("content-length", "0")
+            return response
+        return await call_next(request)
+
+
+app.add_middleware(HeadAsGetMiddleware)
+app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,6 +92,8 @@ async def ensure_job_store_connection() -> None:
     """Verify the configured job store is ready before serving requests."""
 
     job_store = app.state.job_store
+    backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
+    redis_connected = False
     try:
         await job_store.ping()
     except Exception:  # pragma: no cover - logged for observability
@@ -77,9 +102,16 @@ async def ensure_job_store_connection() -> None:
         app.state.job_store = fallback
         await fallback.ping()
         logging.info("redis=unavailable; using in-memory job store")
+        backend = "memory"
     else:
         if isinstance(job_store, RedisJobStore):
             logging.info("redis=connected")
+            redis_connected = True
+
+    app.state.job_store_backend = backend
+    app.state.redis_connected = redis_connected
+    if backend == "memory" and not redis_connected:
+        logging.info("Job store persistence disabled; set REDIS_URL to enable persistence")
 
 app.include_router(root_router)
 app.include_router(a2a_router, prefix="/a2a")

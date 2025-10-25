@@ -83,6 +83,8 @@ async def run_selftest(app: FastAPI) -> Dict[str, Any]:
         "redis_connected": redis_connected,
         "crew_tools": crew_tools_status,
     }
+    report["store"] = store_backend
+    report["redis_connected"] = redis_connected
 
     logger.info("Self-test execution completed", extra={"overall_status": overall_status})
 
