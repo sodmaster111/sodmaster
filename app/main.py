@@ -12,6 +12,7 @@ from app.a2a import router as a2a_router
 from app.auth.google_oauth import router as google_auth_router
 from app.auth.telegram_login import router as telegram_auth_router
 from app.audit.service import CUnit, bootstrap_default_audit_trail
+from app.api.v1.health import router as health_router
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
@@ -58,6 +59,8 @@ app = FastAPI(
         "делегирования задач департаментам CrewAI."
     ),
 )
+
+app.include_router(health_router)
 
 job_store = get_job_store()
 job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
