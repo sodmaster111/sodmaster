@@ -6,8 +6,6 @@ from fastapi import BackgroundTasks, FastAPI, Request, Response, status
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.concurrency import iterate_in_threadpool
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.a2a import router as a2a_router
 from app.audit.service import bootstrap_default_audit_trail
@@ -64,20 +62,6 @@ app.state.audit_trail = audit_trail
 app.state.job_store_backend = job_store_backend
 app.state.redis_connected = isinstance(job_store, RedisJobStore)
 
-class HeadAsGetMiddleware(BaseHTTPMiddleware):
-    """Translate HEAD requests into GET requests while returning an empty body."""
-
-    async def dispatch(self, request: Request, call_next):
-        if request.method == "HEAD":
-            request.scope["method"] = "GET"
-            response = await call_next(request)
-            response.body_iterator = iterate_in_threadpool(iter(()))
-            response.headers.setdefault("content-length", "0")
-            return response
-        return await call_next(request)
-
-
-app.add_middleware(HeadAsGetMiddleware)
 app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(
     CORSMiddleware,
