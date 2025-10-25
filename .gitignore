@@ -2,3 +2,4 @@ app/version_env.json
 
 # Node dependencies
 node_modules/
+content/generated/
