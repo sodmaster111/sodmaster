@@ -35,8 +35,11 @@ def test_in_memory_job_store_lifecycle():
 
 
 REDIS_URL = os.getenv("REDIS_URL")
+CI_NO_NETWORK = os.getenv("CI_NO_NETWORK") == "1"
 
 
+@pytest.mark.network
+@pytest.mark.skipif(CI_NO_NETWORK, reason="no network in CI")
 @pytest.mark.skipif(not REDIS_URL, reason="REDIS_URL is not configured")
 def test_redis_job_store_lifecycle():
     async def _run() -> None:
