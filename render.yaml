@@ -2,10 +2,9 @@
 services:
   - type: web
     name: sodmaster-c-unit
-    runtime: python
-    pythonVersion: "3.12"
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./bin/start_web.sh
     autoDeploy: true
     envVars:
       - key: OPENROUTER_API_KEY
