@@ -3,14 +3,18 @@ uvicorn[standard]
 redis>=5
 pyautogen
 semantic-kernel
-crewai
+crewai>=0.51
 langchain-openai
 web3
 tenacity>=8
 btcpay
 prometheus-client
 
-crewai_tools>=0.75.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
+crewai_tools>=1.2.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
 Leonardo-Ai-SDK>=6.5.0    # SDK для нашего CGO-AI (генерация изображений)
 pytest
 exa_py           # SDK для Exa (продвинутый поиск для CGO/CTO)
+exa
+serper
+pydantic
+prometheus_client

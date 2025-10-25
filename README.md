@@ -39,6 +39,35 @@ To enable it, add a repository secret named `ENABLE_SITE_CI` with the value `tru
   - CGO: `POST /api/v1/cgo/run-marketing-campaign` → `202 Accepted` with `job_id=2636b95b-e930-4ed2-8da5-d977cdde656b`; poll `GET /api/v1/cgo/jobs/2636b95b-e930-4ed2-8da5-d977cdde656b` → `200 OK` & `status=done`
   - A2A: `POST /a2a/command` → `202 Accepted` with `job_id=82143796-b61a-4286-8fdd-e6c2cf32d7ad`; poll `GET /a2a/jobs/82143796-b61a-4286-8fdd-e6c2cf32d7ad` → `200 OK` & `status=done`
 
+## WebDev API examples
+
+Submit a site generation job:
+
+```bash
+curl -sS -X POST \
+  http://localhost:8000/api/v1/webdev/generate-site \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "pages": [
+          {"slug": "press/launch", "title": "Launch", "body": "# Launch\nAnnounce the release."}
+        ],
+        "components": [{"name": "PressHero"}],
+        "layout_prefs": {"cta": {"href": "/contact/"}}
+      }'
+```
+
+Poll the job status:
+
+```bash
+curl -sS http://localhost:8000/api/v1/webdev/jobs/<job_id>
+```
+
+Generate a payload from repository documentation:
+
+```bash
+curl -sS -X POST http://localhost:8000/api/v1/webdev/sync-content
+```
+
 ### Startup logs
     2025-10-25 08:59:21,506 INFO Application startup | python_version=3.11.12 git_sha=unknown build_time=2025-10-25T08:59:21Z job_store=memory
     INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)

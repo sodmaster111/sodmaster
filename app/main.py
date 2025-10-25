@@ -14,6 +14,7 @@ from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
+from app.webdev.routes import router as webdev_router
 from app.root.routes import router as root_router
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
@@ -101,6 +102,7 @@ app.include_router(root_router)
 app.include_router(a2a_router, prefix="/a2a")
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
+app.include_router(webdev_router, prefix="/api/v1/webdev")
 
 
 @app.middleware("http")

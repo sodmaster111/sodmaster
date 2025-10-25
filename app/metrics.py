@@ -47,6 +47,18 @@ HTTP_REQUESTS_TOTAL = Counter(
     ["path"],
 )
 
+CREW_JOBS_TOTAL = Counter(
+    "crew_jobs_total",
+    "Total number of crew jobs processed partitioned by crew and status.",
+    ["crew", "status"],
+)
+
+CREW_JOB_DURATION_SECONDS = Histogram(
+    "crew_job_duration_seconds",
+    "Histogram of crew job execution time in seconds partitioned by crew.",
+    ["crew"],
+)
+
 WAF_BLOCK_TOTAL = Counter(
     "waf_block_total",
     "Total number of requests blocked by the application firewall partitioned by path group.",
@@ -76,6 +88,18 @@ def record_http_request(path: str) -> None:
     """Record a handled HTTP request for the provided path."""
 
     HTTP_REQUESTS_TOTAL.labels(path=path).inc()
+
+
+def record_crew_job_status(crew: str, status: str) -> None:
+    """Increment counters for crew job lifecycle events."""
+
+    CREW_JOBS_TOTAL.labels(crew=crew, status=status).inc()
+
+
+def record_crew_job_duration(crew: str, duration_seconds: float) -> None:
+    """Observe the duration of a crew job execution."""
+
+    CREW_JOB_DURATION_SECONDS.labels(crew=crew).observe(duration_seconds)
 
 
 def record_waf_block(path_group: str) -> None:
