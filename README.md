@@ -27,3 +27,37 @@ To enable it, add a repository secret named `ENABLE_SITE_CI` with the value `tru
   through the Astro sitemap integration.
 - Run `node tests/site_seo_build.mjs` to verify the build emits both assets and that `robots.txt`
   links to the sitemap. This script is executed in CI as part of the default test suite.
+```markdown
+### Observability snapshot — 2025-10-25 08:59 UTC
+
+- `GET /` → `{ "status": "ok", "service": "sodmaster", "docs": "/docs" }`
+- `GET /healthz` → `{ "status": "ok" }`
+- `GET /readyz` → `{ "status": "ok", "dependencies_ready": true }`
+- `GET /version` → `{ "python": "3.11.12", "git_sha": "unknown", "build_time": "2025-10-25T08:59:21Z" }`
+- `GET /ops/selftest`
+  - `crew_tools=available`, `job_store=memory`, `redis_connected=false`
+  - CGO: `POST /api/v1/cgo/run-marketing-campaign` → `202 Accepted` with `job_id=2636b95b-e930-4ed2-8da5-d977cdde656b`; poll `GET /api/v1/cgo/jobs/2636b95b-e930-4ed2-8da5-d977cdde656b` → `200 OK` & `status=done`
+  - A2A: `POST /a2a/command` → `202 Accepted` with `job_id=82143796-b61a-4286-8fdd-e6c2cf32d7ad`; poll `GET /a2a/jobs/82143796-b61a-4286-8fdd-e6c2cf32d7ad` → `200 OK` & `status=done`
+
+### Startup logs
+    2025-10-25 08:59:21,506 INFO Application startup | python_version=3.11.12 git_sha=unknown build_time=2025-10-25T08:59:21Z job_store=memory
+    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
+### Marketing site (Render Static)
+- Service: `render.yaml` → `type: static`, name `sodmaster-site`, publishes `app/site/dist`
+- `robots.txt`
+    User-agent: *
+    Allow: /
+    Allow: /catalog/
+    Allow: /catalog/*
+    Disallow:
+    Sitemap: https://sodmaster.online/sitemap-index.xml
+- `sitemap-index.xml`
+    <?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://sodmaster.online/sitemap-0.xml</loc></sitemap></sitemapindex>
+
+### Prometheus metrics
+- `http_requests_total`
+    `/`=1 · `/healthz`=2 · `/readyz`=2 · `/version`=2 · `/api/v1/cgo/run-marketing-campaign`=1 · `/api/v1/cgo/jobs/2636b95b-e930-4ed2-8da5-d977cdde656b`=1 · `/a2a/command`=1 · `/a2a/jobs/82143796-b61a-4286-8fdd-e6c2cf32d7ad`=1 · `/ops/selftest`=1 · `/metrics`=1
+- `cgo_jobs_total` — accepted=1 · running=1 · done=1
+- `a2a_jobs_total` — accepted=1 · running=1 · done=1
+```
