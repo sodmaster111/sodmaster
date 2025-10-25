@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import posts from '../../data/posts';
+import keywords from '../../seo/keywords.json';
+---
+<BaseLayout title="Sodmaster Blog" description="Insights on crypto-first turf subscriptions and AI-driven groundskeeping." keywords={keywords}>
+  <section class="blog">
+    <header>
+      <p class="eyebrow">Insights</p>
+      <h1>Subscription strategy, crypto payments, and turf automation.</h1>
+      <p class="lede">Our team shares playbooks for rolling out blockchain-friendly billing, measuring turf ROI, and coaching crews with AI guidance.</p>
+    </header>
+    <div class="grid">
+      {posts.map((post) => (
+        <article>
+          <p class="meta">{post.date} · {post.readingTime}</p>
+          <h2><a href={`/blog/${post.slug}/`}>{post.title}</a></h2>
+          <p class="summary">{post.summary}</p>
+          <a class="read-more" href={`/blog/${post.slug}/`}>Read article</a>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  header {
+    display: grid;
+    gap: 1rem;
+    max-width: 50rem;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #3a506b;
+  }
+
+  .lede {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #33415c;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  article {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 1.5rem 3rem rgba(13, 27, 42, 0.12);
+    display: grid;
+    gap: 1rem;
+  }
+
+  .meta {
+    margin: 0;
+    color: #627b94;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.75rem;
+  }
+
+  .summary {
+    margin: 0;
+    color: #33415c;
+    line-height: 1.6;
+  }
+
+  .read-more {
+    color: #1864ab;
+    font-weight: 600;
+  }
+
+  @media (min-width: 60rem) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
