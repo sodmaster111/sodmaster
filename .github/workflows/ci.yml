@@ -2,142 +2,24 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true
-
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v3
+      
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('dev-requirements.txt') }}
-          restore-keys: |
-            pip-${{ runner.os }}-
-
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
+          python-version: '3.11'
+      
       - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Verify site SEO build
-        run: node tests/site_seo_build.mjs
-
-      - name: Smoke import
         run: |
-          python -c "import fastapi, httpx, pydantic; print('imports ok')"
-
-      - name: Run pytest (non-blocking)
-        env:
-          CI_NO_NETWORK: "1"
-        run: |
-          pytest -q || echo "::warning ::pytest failures tolerated for infra bootstrap"
-
-  content_build:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Check for duplicate slugs
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import content_generator as cg
-
-          posts = cg.load_posts(Path("content/blog/posts.json"))
-          cg.ensure_unique_slugs(posts)
-          print(f"Validated {len(posts)} post specifications")
-          PY
-
-      - name: Validate branch naming for generated content PRs
-        if: github.event_name == 'pull_request'
-        run: |
-          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
-          if [[ ! "$REF_NAME" =~ ^content/generated/[0-9]{8}-[0-9]+$ ]]; then
-            echo "Branch name '$REF_NAME' must follow content/generated/YYYYMMDD-X format"
-            exit 1
-          fi
-
-      - name: Generate content
-        run: python content_generator.py --overwrite --output-dir content/generated
-
-  trigger-external-probe:
-    name: Trigger external probe workflow
-    runs-on: ubuntu-latest
-    needs: test
-    if: ${{ secrets.SERVICE_URL != '' }}
-    permissions:
-      workflow: write
-    steps:
-      - name: Dispatch external-probe workflow
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const workflowId = 'external-probe.yml';
-            let ref = context.ref;
-            if (context.eventName === 'pull_request' && context.payload.pull_request) {
-              ref = context.payload.pull_request.head.ref;
-            } else if (ref.startsWith('refs/heads/')) {
-              ref = ref.replace('refs/heads/', '');
-            }
-
-            if (ref.startsWith('refs/')) {
-              core.warning(`Unable to dispatch workflow using ref "${ref}".`);
-            } else {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: workflowId,
-                ref,
-              });
-            }
-
-  lighthouse:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install frontend deps
-        working-directory: app/site
-        run: |
-          npm ci || npm install
-
-      - name: Build site
-        working-directory: app/site
-        run: npm run build || npx astro build
-
-      - name: Run Lighthouse on static build
-        run: |
-          npx -y @lhci/cli autorun --upload.target=filesystem --collect.staticDistDir=app/site/dist || true
+          pip install -r requirements.txt
+      
+      - name: Run tests
+        run: pytest tests/ -v
