@@ -1,9 +1,8 @@
 def test_get_root_ok(client):
     response = client.get("/")
     assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "ok"
-    assert body["service"] == "sodmaster"
+    assert response.headers["content-type"].startswith("text/html")
+    assert "<title" in response.text
 
 
 def test_head_root_ok(client):
