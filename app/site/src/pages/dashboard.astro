@@ -1,0 +1,268 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import keywords from '../seo/keywords.json';
+
+const goal = 1_000_000;
+const tiers = ['Founder', 'Early', 'Community'];
+---
+
+<BaseLayout title="Fundraise dashboard" description="Live status of Sodmaster's community fundraise." keywords={keywords}>
+  <section class="dashboard">
+    <header>
+      <h1>Fundraise performance</h1>
+      <p class="ticker" id="fundraiseTicker">$0 raised of ${goal.toLocaleString()}</p>
+    </header>
+
+    <section class="chart">
+      <h2>Tier distribution</h2>
+      <div class="tiers-chart" id="tiersChart">
+        {tiers.map((tier) => (
+          <div class="tier-row" data-tier={tier}>
+            <span class="tier-label">{tier}</span>
+            <div class="tier-bar"><span class="fill"></span></div>
+            <span class="tier-value" data-tier-value>{`$0`}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="transactions">
+      <h2>Latest payments</h2>
+      <ul id="transactionsList" class="transaction-list">
+        <li class="empty">Waiting for first contribution…</li>
+      </ul>
+    </section>
+  </section>
+
+  <script>
+    const GOAL_USD = {goal};
+    const TIERS = {JSON.stringify(tiers)};
+
+    const tickerEl = document.querySelector('#fundraiseTicker');
+    const tiersChartEl = document.querySelector('#tiersChart');
+    const transactionsEl = document.querySelector('#transactionsList');
+
+    const currencyFormatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    });
+
+    function updateTicker(total) {
+      if (!tickerEl) return;
+      tickerEl.textContent = `${currencyFormatter.format(total)} raised of ${currencyFormatter.format(GOAL_USD)}`;
+    }
+
+    function updateTiers(byTier) {
+      if (!tiersChartEl) return;
+      const total = Object.values(byTier).reduce((acc, value) => acc + Number(value || 0), 0);
+      TIERS.forEach((tier) => {
+        const row = tiersChartEl.querySelector(`.tier-row[data-tier="${tier}"]`);
+        if (!row) return;
+        const tierValue = Number(byTier?.[tier] ?? 0);
+        const fill = row.querySelector('.fill');
+        const valueEl = row.querySelector('[data-tier-value]');
+        const width = total > 0 ? Math.max((tierValue / total) * 100, 4) : 0;
+        if (fill) {
+          fill.style.width = `${width}%`;
+        }
+        if (valueEl) {
+          valueEl.textContent = currencyFormatter.format(tierValue);
+        }
+      });
+    }
+
+    function truncate(wallet) {
+      if (!wallet) return '—';
+      if (wallet.length <= 10) return wallet;
+      return `${wallet.slice(0, 6)}…${wallet.slice(-4)}`;
+    }
+
+    function updateTransactions(transactions) {
+      if (!transactionsEl) return;
+      transactionsEl.innerHTML = '';
+      if (!transactions || transactions.length === 0) {
+        transactionsEl.innerHTML = '<li class="empty">Waiting for first contribution…</li>';
+        return;
+      }
+      transactions.slice(0, 10).forEach((txn) => {
+        const item = document.createElement('li');
+        item.className = 'transaction';
+        const amount = currencyFormatter.format(Number(txn.amount_usd ?? 0));
+        const time = new Date(txn.time ?? Date.now());
+        const timeString = time.toLocaleString();
+        const wallet = truncate(txn.wallet_truncated || txn.wallet);
+        item.innerHTML = `
+          <span class="amount">${amount}</span>
+          <span class="meta">${wallet} · ${timeString}</span>
+          <span class="currency">${(txn.currency || 'USD').toUpperCase()}</span>
+        `;
+        transactionsEl.appendChild(item);
+      });
+    }
+
+    function applyStatus(payload) {
+      if (!payload) return;
+      updateTicker(payload.total_usd || 0);
+      updateTiers(payload.by_tier || {});
+      updateTransactions(payload.last_transactions || []);
+    }
+
+    async function fetchStatus() {
+      try {
+        const response = await fetch('/api/v1/fundraise/status');
+        if (!response.ok) return;
+        const payload = await response.json();
+        applyStatus(payload);
+      } catch (err) {
+        console.error('Failed to load fundraise status', err);
+      }
+    }
+
+    function connectWebsocket() {
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${protocol}//${window.location.host}/ws/fundraise`;
+        const socket = new WebSocket(url);
+        socket.addEventListener('message', (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            applyStatus(payload);
+          } catch (err) {
+            console.error('Failed to parse fundraise payload', err);
+          }
+        });
+        socket.addEventListener('close', () => {
+          setTimeout(fetchStatus, 1000);
+        });
+      } catch (err) {
+        console.warn('WebSocket unavailable, falling back to polling');
+        fetchStatus();
+      }
+    }
+
+    fetchStatus();
+    connectWebsocket();
+    setInterval(fetchStatus, 30000);
+  </script>
+</BaseLayout>
+
+<style>
+  .dashboard {
+    display: grid;
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+  }
+
+  .ticker {
+    font-size: 1.25rem;
+    color: var(--color-accent, #116149);
+    font-weight: 600;
+  }
+
+  .chart,
+  .transactions {
+    background: rgba(17, 97, 73, 0.06);
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+
+  .chart h2,
+  .transactions h2 {
+    margin-top: 0;
+  }
+
+  .tiers-chart {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .tier-row {
+    display: grid;
+    grid-template-columns: minmax(6rem, 1fr) 4fr minmax(5rem, auto);
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .tier-bar {
+    position: relative;
+    background: rgba(17, 97, 73, 0.15);
+    border-radius: 999px;
+    height: 0.75rem;
+    overflow: hidden;
+  }
+
+  .tier-bar .fill {
+    position: absolute;
+    inset: 0;
+    width: 0;
+    background: linear-gradient(90deg, #20c28f, #0b7454);
+    transition: width 0.5s ease;
+  }
+
+  .transaction-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .transaction {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    background: white;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 18px rgba(15, 91, 70, 0.08);
+  }
+
+  .transaction .amount {
+    font-weight: 600;
+    color: #0a5740;
+  }
+
+  .transaction .meta {
+    color: rgba(14, 51, 39, 0.75);
+    font-size: 0.9rem;
+  }
+
+  .transaction .currency {
+    font-variant: all-small-caps;
+    color: rgba(14, 51, 39, 0.65);
+  }
+
+  .transaction-list .empty {
+    text-align: center;
+    padding: 1.5rem;
+    border: 2px dashed rgba(17, 97, 73, 0.25);
+    border-radius: 1rem;
+    color: rgba(14, 51, 39, 0.65);
+    background: rgba(17, 97, 73, 0.05);
+  }
+
+  @media (max-width: 720px) {
+    .transaction {
+      grid-template-columns: 1fr;
+      text-align: left;
+    }
+
+    .tier-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+</style>

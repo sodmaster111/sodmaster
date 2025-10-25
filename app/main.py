@@ -3,8 +3,7 @@ import logging
 import os
 from pathlib import Path
 
-import uvicorn
-from fastapi import BackgroundTasks, FastAPI, Request, Response, status
+from fastapi import BackgroundTasks, FastAPI, Request, Response, WebSocket, status
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,6 +24,9 @@ from app.services.tasks import run_crew_task, task_results
 from app.subscription import router as subscription_router
 from app.subscription.repository import SubscriptionRepository
 from app.version_info import load_version
+from app.fundraise.service import FundraiseTracker
+from app.fundraise.routes import router as fundraise_router
+from app.fundraise.websocket import handle_fundraise_websocket
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -65,6 +67,7 @@ subscription_db_path = Path(
     os.environ.get("SUBSCRIPTION_DB_PATH", "/tmp/sodmaster_subscriptions.db")
 )
 subscription_repo = SubscriptionRepository(subscription_db_path)
+fundraise_tracker = FundraiseTracker()
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
@@ -82,6 +85,7 @@ app.state.audit_trail = audit_trail
 app.state.subscription_repo = subscription_repo
 app.state.job_store_backend = job_store_backend
 app.state.redis_connected = isinstance(job_store, RedisJobStore)
+app.state.fundraise_tracker = fundraise_tracker
 
 app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(
@@ -126,6 +130,7 @@ app.include_router(webdev_router, prefix="/api/v1/webdev")
 app.include_router(mktg_router, prefix="/api/v1/mktg")
 app.include_router(miniapp_router)
 app.include_router(subscription_router)
+app.include_router(fundraise_router, prefix="/api/v1/fundraise")
 
 
 @app.middleware("http")
@@ -190,6 +195,12 @@ def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
+@app.websocket("/ws/fundraise")
+async def fundraise_stream(websocket: WebSocket):
+    tracker: FundraiseTracker = app.state.fundraise_tracker
+    await handle_fundraise_websocket(websocket, tracker)
+
+
 @app.get("/version")
 def version():
     return dict(VERSION)
@@ -216,4 +227,6 @@ async def get_task_result(task_id: str):
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
