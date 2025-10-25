@@ -1,43 +1,16 @@
-import asyncio
-import inspect
-import os
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 import pytest
+from fastapi.testclient import TestClient
 
-try:  # pragma: no cover - optional dependency guard for local dev containers
-    from fastapi.testclient import TestClient
-    from app.main import app
-except ModuleNotFoundError:  # pragma: no cover - fallback when FastAPI deps absent locally
-    TestClient = None
-    app = None
-
-os.environ.setdefault("OPENAI_API_KEY", "test-openai-key")
-
-
-def pytest_addoption(parser: pytest.Parser) -> None:
-    """Register project-specific pytest configuration options."""
-
-    parser.addini("asyncio_mode", "Configure asyncio event loop policy", default="auto")
+from app.main import app
 
 
 @pytest.fixture()
 def client():
-    """Provide a FastAPI TestClient for API tests."""
-    if TestClient is None or app is None:
-        pytest.skip("FastAPI test client dependencies are not available")
     return TestClient(app)
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_pyfunc_call(pyfuncitem):
-    """Run async test functions without requiring pytest-asyncio plugin."""
-
-    test_func = pyfuncitem.obj
-    if inspect.iscoroutinefunction(test_func):
-        loop = asyncio.new_event_loop()
-        try:
-            loop.run_until_complete(test_func(**pyfuncitem.funcargs))
-        finally:
-            loop.close()
-        return True
-    return None

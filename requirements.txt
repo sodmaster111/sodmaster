@@ -14,3 +14,4 @@ pytest
 exa_py           # SDK для Exa (продвинутый поиск для CGO/CTO)
 pydantic
 prometheus_client
+pytest-asyncio

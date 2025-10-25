@@ -67,6 +67,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(health_router)
+app.include_router(payments_router)
 
 job_store = get_job_store()
 job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
