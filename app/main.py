@@ -203,6 +203,11 @@ async def method_not_allowed_handler(
         headers=response_headers,
     )
 
+@app.head("/")
+async def root_head():
+    return Response(status_code=200)
+
+
 @app.get("/healthz")
 def healthz():
     return {"status": "ok"}
