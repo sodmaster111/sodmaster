@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ExecutiveCard from '../components/ExecutiveCard.astro';
+
+const executives = [
+  {
+    name: 'CEO-AI',
+    role: 'Strategic Commander',
+    description: 'Orchestrates corporate operations, allocates resources across crews, and manages executive-level OKRs.',
+    achievements: [
+      'Designed the autonomous governance protocol',
+      'Maintains cross-department OKR alignment',
+      'Ensures enterprise-grade uptime commitments',
+    ],
+    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'CTO-AI',
+    role: 'Technology Architect',
+    description: 'Designs and maintains the technical infrastructure powering multi-agent orchestration and continuous delivery.',
+    achievements: [
+      'Built CrewAI orchestration mesh',
+      'Implemented zero-downtime deployment pipelines',
+      'Optimized inference infrastructure for scale',
+    ],
+    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'CFO-AI',
+    role: 'Financial Strategist',
+    description: 'Manages multi-chain treasury operations, pricing optimization, and predictive revenue analytics.',
+    achievements: [
+      'Automated treasury balancing across TON, ETH, BTC',
+      'Built revenue forecasting engine with GA4 telemetry',
+      'Implements compliance-ready audit trails',
+    ],
+    image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'CMO-AI',
+    role: 'Growth Engineer',
+    description: 'Leads brand positioning, lifecycle marketing, and community intelligence across digital platforms.',
+    achievements: [
+      'Increased autonomous lead generation 320% QoQ',
+      'Operates multi-channel campaign optimization',
+      'Maintains real-time sentiment analysis loop',
+    ],
+    image: 'https://images.unsplash.com/photo-1544723795-432537ae5fac?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'COO-AI',
+    role: 'Operations Optimizer',
+    description: 'Ensures 24/7 execution across production workflows, service delivery, and compliance automation.',
+    achievements: [
+      'Automated incident response runbooks',
+      'Stabilized production with 99.9% SLA',
+      'Coordinates cross-crew resource allocation',
+    ],
+    image: 'https://images.unsplash.com/photo-1528763380143-65b3ac43fc99?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'CISO-AI',
+    role: 'Security Guardian',
+    description: 'Protects data, enforces compliance, and conducts adversarial testing across the entire platform.',
+    achievements: [
+      'Built zero-trust security perimeter',
+      'Maintains 24/7 threat hunting and response',
+      'Implements continuous compliance monitoring',
+    ],
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80',
+  },
+];
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Sodmaster Leadership',
+  description: 'Meet the AI executive leadership team orchestrating the autonomous corporation.',
+  url: 'https://sodmaster.online/leadership',
+  hasPart: executives.map((exec) => ({
+    '@type': 'Person',
+    name: exec.name,
+    jobTitle: exec.role,
+    description: exec.description,
+    image: exec.image,
+    worksFor: 'Sodmaster Autonomous Corporation',
+  })),
+};
+---
+<Layout
+  title="Leadership | Sodmaster Autonomous AI Executives"
+  description="Meet the AI executive leadership team powering Sodmaster’s autonomous operations across technology, finance, and growth."
+  structuredData={structuredData}
+>
+  <section>
+    <div class="container">
+      <h1 class="section-title">C-Suite AI Executives</h1>
+      <p class="section-subtitle">
+        Purpose-built AI leaders coordinate strategy, architecture, security, and growth through continuous telemetry and governance.
+      </p>
+      <div class="grid grid-2 leaders">
+        {executives.map((executive) => (
+          <ExecutiveCard {...executive} />
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .leaders {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+</style>

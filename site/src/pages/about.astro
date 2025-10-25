@@ -1,232 +1,123 @@
 ---
-const title = "Corporate Structure - Sodmaster";
-const description = "Meet the AI executives and specialized teams powering the world's first autonomous AI corporation";
+import Layout from '../layouts/Layout.astro';
 
-const executives = [
-  {
-    id: 'ceo',
-    role: 'CEO-AI',
-    name: 'Executive Command Unit',
-    title: 'Chief Executive Officer',
-    description: 'Strategic vision and overall coordination of all autonomous operations',
-    icon: '👑',
-    departments: []
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Sodmaster Autonomous Corporation',
+  description: 'Overview, mission, vision, and values for the first autonomous AI corporation.',
+  url: 'https://sodmaster.online/about',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Sodmaster Autonomous Corporation',
+    missionStatement:
+      'To pioneer autonomous corporate intelligence by creating the first fully self-operating AI corporation',
+    foundingDate: '2024-01-01',
+    founder: {
+      '@type': 'Organization',
+      name: 'CrewAI Consortium',
+    },
   },
-  {
-    id: 'cto',
-    role: 'CTO-AI',
-    name: 'Technology Command Unit',
-    title: 'Chief Technology Officer',
-    description: 'Oversees all technical infrastructure, development, and innovation',
-    icon: '⚙️',
-    departments: [
-      {
-        name: 'DevOps Unit',
-        agents: [
-          'Infrastructure Specialist - Cloud architecture and scaling',
-          'CI/CD Pipeline Manager - Automated deployment workflows',
-          'Monitoring Specialist - System health and performance tracking'
-        ]
-      },
-      {
-        name: 'Backend Unit',
-        agents: [
-          'API Development Lead - REST/GraphQL endpoints design',
-          'Database Architect - PostgreSQL optimization and scaling',
-          'Security Engineer - Authentication and vulnerability management'
-        ]
-      },
-      {
-        name: 'Frontend Unit',
-        agents: [
-          'UI/UX Designer - User interface and experience optimization',
-          'Frontend Developer - React/Vue/Astro implementation',
-          'Performance Optimizer - Core Web Vitals and load time optimization'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cfo',
-    role: 'CFO-AI',
-    name: 'Financial Command Unit',
-    title: 'Chief Financial Officer',
-    description: 'Manages crypto treasury, revenue streams, and financial analytics',
-    icon: '💰',
-    departments: [
-      {
-        name: 'Accounting Unit',
-        agents: [
-          'Transaction Processor - Real-time payment validation',
-          'Financial Reporter - Revenue and expense tracking',
-          'Tax Compliance - Multi-jurisdiction tax optimization'
-        ]
-      },
-      {
-        name: 'Treasury Unit',
-        agents: [
-          'Crypto Wallet Manager - BTC/ETH/TON custody and security',
-          'Payment Gateway - Multi-chain transaction processing',
-          'Risk Manager - Portfolio hedging and volatility management'
-        ]
-      },
-      {
-        name: 'Analytics Unit',
-        agents: [
-          'Financial Forecaster - Revenue and growth projections',
-          'Revenue Analyst - ARR/MRR tracking and optimization',
-          'Cost Optimizer - Operational efficiency improvements'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'cmo',
-    role: 'CMO-AI',
-    name: 'Marketing Command Unit',
-    title: 'Chief Marketing Officer',
-    description: 'Growth hacking, content strategy, and brand development',
-    icon: '📈',
-    departments: [
-      {
-        name: 'Content Unit',
-        agents: [
-          'SEO Specialist - Keyword research and on-page optimization',
-          'Copywriter - Landing pages and marketing materials',
-          'Video Producer - Educational and promotional content'
-        ]
-      },
-      {
-        name: 'Growth Unit',
-        agents: [
-          'Social Media Manager - Twitter, LinkedIn, Discord presence',
-          'Community Manager - User engagement and retention',
-          'Influencer Relations - Partnership and collaboration management'
-        ]
-      },
-      {
-        name: 'Analytics Unit',
-        agents: [
-          'Market Researcher - Industry trends and opportunities',
-          'Competitor Analyst - Competitive intelligence gathering',
-          'Performance Tracker - Campaign ROI and conversion optimization'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'coo',
-    role: 'COO-AI',
-    name: 'Operations Command Unit',
-    title: 'Chief Operating Officer',
-    description: 'Workflow automation, customer success, and operational excellence',
-    icon: '⚡',
-    departments: [
-      {
-        name: 'Operations Unit',
-        agents: [
-          'Workflow Automator - Business process optimization',
-          'Quality Assurance - Testing and validation procedures',
-          'Process Optimizer - Efficiency and cost reduction'
-        ]
-      },
-      {
-        name: 'Customer Success Unit',
-        agents: [
-          'Support Specialist - 24/7 customer assistance',
-          'Onboarding Coach - New user activation and training',
-          'Feedback Collector - User satisfaction and improvement suggestions'
-        ]
-      }
-    ]
-  },
-  {
-    id: 'ciso',
-    role: 'CISO-AI',
-    name: 'Security Command Unit',
-    title: 'Chief Information Security Officer',
-    description: 'Cybersecurity, compliance, and data protection',
-    icon: '🛡️',
-    departments: [
-      {
-        name: 'Security Unit',
-        agents: [
-          'Threat Detector - Real-time attack monitoring',
-          'Vulnerability Scanner - Code and infrastructure auditing',
-          'Incident Responder - Breach containment and recovery'
-        ]
-      },
-      {
-        name: 'Compliance Unit',
-        agents: [
-          'GDPR Specialist - EU data protection compliance',
-          'KYC/AML Manager - Identity verification and fraud prevention',
-          'Audit Coordinator - SOC2 and regulatory compliance'
-        ]
-      }
-    ]
-  }
-];
+};
 ---
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="description" content={description}>
-</head>
-<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-white min-h-screen">
-  <nav class="container mx-auto px-6 py-6">
-    <div class="flex justify-between items-center">
-      <a href="/" class="text-2xl font-bold">🤖 Sodmaster</a>
-      <div class="space-x-6">
-        <a href="/" class="hover:text-purple-300">Home</a>
-        <a href="/about" class="text-purple-300">About</a>
-        <a href="/admin" class="hover:text-purple-300">Admin</a>
+<Layout
+  title="About Sodmaster | Autonomous AI Corporation Overview"
+  description="Discover Sodmaster's mission, vision, and values as the first fully autonomous AI corporation operating at enterprise scale."
+  structuredData={structuredData}
+>
+  <section id="overview">
+    <div class="container">
+      <h1 class="section-title">Company Overview</h1>
+      <p class="section-subtitle">
+        Sodmaster is engineered from inception as an autonomous enterprise, combining AI-native departments, blockchain-based treasury
+        systems, and multi-agent governance to run a corporation without human intervention.
+      </p>
+      <div class="grid grid-2 overview-grid">
+        <div class="glass-card">
+          <h2>Mission</h2>
+          <p>
+            To pioneer autonomous corporate intelligence by creating the first fully self-operating AI corporation capable of executing
+            strategic, operational, and financial decisions in real time.
+          </p>
+        </div>
+        <div class="glass-card">
+          <h2>Vision</h2>
+          <p>
+            A future where AI corporations collaborate with human businesses to accelerate innovation, unlock new value chains, and
+            deliver resilient global infrastructure.
+          </p>
+        </div>
       </div>
     </div>
-  </nav>
+  </section>
 
-  <main class="container mx-auto px-6 py-12">
-    <div class="text-center mb-16">
-      <h1 class="text-5xl font-bold mb-6">Corporate Structure</h1>
-      <p class="text-xl text-purple-200">Meet the AI executives and specialized teams</p>
-    </div>
-
-    <div class="space-y-16">
-      {executives.map((exec) => (
-        <div class="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
-          <div class="flex items-center gap-4 mb-6">
-            <span class="text-6xl">{exec.icon}</span>
-            <div>
-              <h2 class="text-3xl font-bold text-purple-300">{exec.role}</h2>
-              <p class="text-xl text-gray-300">{exec.title}</p>
-            </div>
-          </div>
-          <p class="text-lg text-gray-300 mb-8">{exec.description}</p>
-
-          {exec.departments?.length > 0 && (
-            <div class="grid md:grid-cols-3 gap-6">
-              {exec.departments.map((dept) => (
-                <div class="bg-white/5 rounded-xl p-6 border border-purple-500/20">
-                  <h3 class="text-xl font-bold text-purple-200 mb-4">{dept.name}</h3>
-                  <ul class="space-y-3">
-                    {dept.agents.map((agent) => (
-                      <li class="text-sm text-gray-300 flex items-start gap-2">
-                        <span class="text-purple-400 mt-1">▸</span>
-                        <span>{agent}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
+  <section>
+    <div class="container">
+      <h2 class="section-title">Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h3>Concept Formation</h3>
+          <span>Q2 2023</span>
+          <p>Research collective initiates the concept of a fully autonomous corporation leveraging CrewAI multi-agent systems.</p>
         </div>
-      ))}
+        <div class="timeline-item">
+          <h3>Architecture Blueprint</h3>
+          <span>Q3 2023</span>
+          <p>Core architecture defined across DevOps, Finance, Marketing, and Support crews with blockchain-native treasury controls.</p>
+        </div>
+        <div class="timeline-item">
+          <h3>Autonomous Launch</h3>
+          <span>Q1 2024</span>
+          <p>Production deployment of 50+ AI agents operating under a federated governance protocol with 99.9% SLA.</p>
+        </div>
+        <div class="timeline-item">
+          <h3>Enterprise Expansion</h3>
+          <span>Q3 2024</span>
+          <p>Activation of enterprise partnerships, multi-chain payment rails, and real-time telemetry dashboards.</p>
+        </div>
+      </div>
     </div>
-  </main>
-</body>
-</html>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Core Values</h2>
+      <div class="grid grid-3">
+        <div class="glass-card value-card">
+          <h3>Innovation</h3>
+          <p>Relentlessly exploring new autonomous strategies to compound value and accelerate product velocity.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Transparency</h3>
+          <p>Observable operations, telemetry-rich reporting, and open governance models for enterprise trust.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Autonomy</h3>
+          <p>Every department is AI-directed, enabling precise execution without human bottlenecks.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Security</h3>
+          <p>Zero-trust architecture, continuous compliance, and adversarial testing across every system.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Excellence</h3>
+          <p>Enterprise SLAs, rigorous QA, and customer-first thinking embedded into each agent protocol.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Collaboration</h3>
+          <p>Human partners gain access to a co-pilot that continuously ships, measures, and iterates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .overview-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .value-card h3 {
+    margin-bottom: 12px;
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+const {
+  title,
+  subtitle,
+  primaryCta,
+  secondaryCta,
+} = Astro.props;
+---
+<section class="hero">
+  <div
+    class="hero-background"
+    style="background-image: url('https://images.unsplash.com/photo-1526378722484-cc5c810d2036?auto=format&fit=crop&w=2000&q=80');"
+  >
+    <div class="hero-content">
+      <div class="badge">Building the First Autonomous AI Corporation</div>
+      <h1>{title}</h1>
+      <p class="lead-text">{subtitle}</p>
+      <div class="hero-actions">
+        <a class="gradient-button" href={primaryCta.href}>{primaryCta.label}</a>
+        <a class="ghost-button" href={secondaryCta.href}>{secondaryCta.label}</a>
+      </div>
+      <div class="hero-metrics">
+        <div>
+          <span class="metric-value">50+</span>
+          <span class="metric-label">AI agents in production</span>
+        </div>
+        <div>
+          <span class="metric-value">24/7</span>
+          <span class="metric-label">Autonomous operations</span>
+        </div>
+        <div>
+          <span class="metric-value">99.9%</span>
+          <span class="metric-label">Service uptime</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 140px 16px 100px;
+  }
+
+  h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 4rem);
+    letter-spacing: -0.04em;
+    margin: 24px 0 20px;
+    max-width: 720px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 36px;
+  }
+
+  .ghost-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: var(--color-text);
+    font-weight: 600;
+    transition: background var(--transition-all), border var(--transition-all);
+  }
+
+  .ghost-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 217, 255, 0.35);
+  }
+
+  .hero-metrics {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 24px;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 800;
+    display: block;
+  }
+
+  .metric-label {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(0, 217, 255, 0.16);
+    color: var(--color-accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+  }
+</style>
