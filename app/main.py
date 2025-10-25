@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.a2a import router as a2a_router
+from app.auth.google_oauth import router as google_auth_router
+from app.auth.telegram_login import router as telegram_auth_router
 from app.audit.service import CUnit, bootstrap_default_audit_trail
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
@@ -32,6 +34,8 @@ from app.version_info import load_version
 from app.fundraise.service import FundraiseTracker
 from app.fundraise.routes import router as fundraise_router
 from app.fundraise.websocket import handle_fundraise_websocket
+from app.users.repository import UserRepository
+from app.users.routes import router as users_router
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -76,6 +80,7 @@ fundraise_tracker = FundraiseTracker()
 payment_router = PaymentRouter()
 transaction_verifier = TransactionVerifier()
 webhook_rate_limiter = RateLimiter(limit=10, window_seconds=60.0)
+user_repository = UserRepository()
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
@@ -98,6 +103,7 @@ app.state.treasury_whitelist = {}
 app.state.payment_router = payment_router
 app.state.transaction_verifier = transaction_verifier
 app.state.webhook_rate_limiter = webhook_rate_limiter
+app.state.user_repo = user_repository
 
 app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(
@@ -145,6 +151,9 @@ app.include_router(miniapp_router)
 app.include_router(subscription_router)
 app.include_router(fundraise_router, prefix="/api/v1/fundraise")
 app.include_router(treasury_router)
+app.include_router(google_auth_router)
+app.include_router(telegram_auth_router)
+app.include_router(users_router)
 
 
 @app.middleware("http")
