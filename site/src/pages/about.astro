@@ -1,0 +1,232 @@
+---
+const title = "Corporate Structure - Sodmaster";
+const description = "Meet the AI executives and specialized teams powering the world's first autonomous AI corporation";
+
+const executives = [
+  {
+    id: 'ceo',
+    role: 'CEO-AI',
+    name: 'Executive Command Unit',
+    title: 'Chief Executive Officer',
+    description: 'Strategic vision and overall coordination of all autonomous operations',
+    icon: '👑',
+    departments: []
+  },
+  {
+    id: 'cto',
+    role: 'CTO-AI',
+    name: 'Technology Command Unit',
+    title: 'Chief Technology Officer',
+    description: 'Oversees all technical infrastructure, development, and innovation',
+    icon: '⚙️',
+    departments: [
+      {
+        name: 'DevOps Unit',
+        agents: [
+          'Infrastructure Specialist - Cloud architecture and scaling',
+          'CI/CD Pipeline Manager - Automated deployment workflows',
+          'Monitoring Specialist - System health and performance tracking'
+        ]
+      },
+      {
+        name: 'Backend Unit',
+        agents: [
+          'API Development Lead - REST/GraphQL endpoints design',
+          'Database Architect - PostgreSQL optimization and scaling',
+          'Security Engineer - Authentication and vulnerability management'
+        ]
+      },
+      {
+        name: 'Frontend Unit',
+        agents: [
+          'UI/UX Designer - User interface and experience optimization',
+          'Frontend Developer - React/Vue/Astro implementation',
+          'Performance Optimizer - Core Web Vitals and load time optimization'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'cfo',
+    role: 'CFO-AI',
+    name: 'Financial Command Unit',
+    title: 'Chief Financial Officer',
+    description: 'Manages crypto treasury, revenue streams, and financial analytics',
+    icon: '💰',
+    departments: [
+      {
+        name: 'Accounting Unit',
+        agents: [
+          'Transaction Processor - Real-time payment validation',
+          'Financial Reporter - Revenue and expense tracking',
+          'Tax Compliance - Multi-jurisdiction tax optimization'
+        ]
+      },
+      {
+        name: 'Treasury Unit',
+        agents: [
+          'Crypto Wallet Manager - BTC/ETH/TON custody and security',
+          'Payment Gateway - Multi-chain transaction processing',
+          'Risk Manager - Portfolio hedging and volatility management'
+        ]
+      },
+      {
+        name: 'Analytics Unit',
+        agents: [
+          'Financial Forecaster - Revenue and growth projections',
+          'Revenue Analyst - ARR/MRR tracking and optimization',
+          'Cost Optimizer - Operational efficiency improvements'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'cmo',
+    role: 'CMO-AI',
+    name: 'Marketing Command Unit',
+    title: 'Chief Marketing Officer',
+    description: 'Growth hacking, content strategy, and brand development',
+    icon: '📈',
+    departments: [
+      {
+        name: 'Content Unit',
+        agents: [
+          'SEO Specialist - Keyword research and on-page optimization',
+          'Copywriter - Landing pages and marketing materials',
+          'Video Producer - Educational and promotional content'
+        ]
+      },
+      {
+        name: 'Growth Unit',
+        agents: [
+          'Social Media Manager - Twitter, LinkedIn, Discord presence',
+          'Community Manager - User engagement and retention',
+          'Influencer Relations - Partnership and collaboration management'
+        ]
+      },
+      {
+        name: 'Analytics Unit',
+        agents: [
+          'Market Researcher - Industry trends and opportunities',
+          'Competitor Analyst - Competitive intelligence gathering',
+          'Performance Tracker - Campaign ROI and conversion optimization'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'coo',
+    role: 'COO-AI',
+    name: 'Operations Command Unit',
+    title: 'Chief Operating Officer',
+    description: 'Workflow automation, customer success, and operational excellence',
+    icon: '⚡',
+    departments: [
+      {
+        name: 'Operations Unit',
+        agents: [
+          'Workflow Automator - Business process optimization',
+          'Quality Assurance - Testing and validation procedures',
+          'Process Optimizer - Efficiency and cost reduction'
+        ]
+      },
+      {
+        name: 'Customer Success Unit',
+        agents: [
+          'Support Specialist - 24/7 customer assistance',
+          'Onboarding Coach - New user activation and training',
+          'Feedback Collector - User satisfaction and improvement suggestions'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'ciso',
+    role: 'CISO-AI',
+    name: 'Security Command Unit',
+    title: 'Chief Information Security Officer',
+    description: 'Cybersecurity, compliance, and data protection',
+    icon: '🛡️',
+    departments: [
+      {
+        name: 'Security Unit',
+        agents: [
+          'Threat Detector - Real-time attack monitoring',
+          'Vulnerability Scanner - Code and infrastructure auditing',
+          'Incident Responder - Breach containment and recovery'
+        ]
+      },
+      {
+        name: 'Compliance Unit',
+        agents: [
+          'GDPR Specialist - EU data protection compliance',
+          'KYC/AML Manager - Identity verification and fraud prevention',
+          'Audit Coordinator - SOC2 and regulatory compliance'
+        ]
+      }
+    ]
+  }
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-white min-h-screen">
+  <nav class="container mx-auto px-6 py-6">
+    <div class="flex justify-between items-center">
+      <a href="/" class="text-2xl font-bold">🤖 Sodmaster</a>
+      <div class="space-x-6">
+        <a href="/" class="hover:text-purple-300">Home</a>
+        <a href="/about" class="text-purple-300">About</a>
+        <a href="/admin" class="hover:text-purple-300">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto px-6 py-12">
+    <div class="text-center mb-16">
+      <h1 class="text-5xl font-bold mb-6">Corporate Structure</h1>
+      <p class="text-xl text-purple-200">Meet the AI executives and specialized teams</p>
+    </div>
+
+    <div class="space-y-16">
+      {executives.map((exec) => (
+        <div class="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10">
+          <div class="flex items-center gap-4 mb-6">
+            <span class="text-6xl">{exec.icon}</span>
+            <div>
+              <h2 class="text-3xl font-bold text-purple-300">{exec.role}</h2>
+              <p class="text-xl text-gray-300">{exec.title}</p>
+            </div>
+          </div>
+          <p class="text-lg text-gray-300 mb-8">{exec.description}</p>
+
+          {exec.departments?.length > 0 && (
+            <div class="grid md:grid-cols-3 gap-6">
+              {exec.departments.map((dept) => (
+                <div class="bg-white/5 rounded-xl p-6 border border-purple-500/20">
+                  <h3 class="text-xl font-bold text-purple-200 mb-4">{dept.name}</h3>
+                  <ul class="space-y-3">
+                    {dept.agents.map((agent) => (
+                      <li class="text-sm text-gray-300 flex items-start gap-2">
+                        <span class="text-purple-400 mt-1">▸</span>
+                        <span>{agent}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </main>
+</body>
+</html>
