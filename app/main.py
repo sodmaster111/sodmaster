@@ -12,6 +12,7 @@ from app.audit.service import bootstrap_default_audit_trail
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
+from app.mktg.routes import router as mktg_router
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
 from app.webdev.routes import router as webdev_router
@@ -103,6 +104,7 @@ app.include_router(a2a_router, prefix="/a2a")
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
 app.include_router(webdev_router, prefix="/api/v1/webdev")
+app.include_router(mktg_router, prefix="/api/v1/mktg")
 
 
 @app.middleware("http")
