@@ -1,0 +1,13 @@
+{
+  "channels": [
+    "twitter",
+    "linkedin",
+    "youtube",
+    "telegram_channel",
+    "telegram_group"
+  ],
+  "branding": {
+    "logo": "…",
+    "brand_color": "#4A90E2"
+  }
+}
