@@ -178,6 +178,7 @@ app.include_router(treasury_router)
 app.include_router(google_auth_router)
 app.include_router(telegram_auth_router)
 app.include_router(users_router)
+app.include_router(payments_router)
 
 
 @app.middleware("http")
