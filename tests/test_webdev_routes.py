@@ -44,7 +44,13 @@ def test_generate_site_pipeline(client, monkeypatch, temp_site):
                 "slug": "press/launch",
                 "title": "Launch",
                 "body": "# Launch\nThis is the launch announcement.",
-            }
+            },
+            {
+                "slug": "press/briefing",
+                "title": "Briefing",
+                "body": "# Briefing\nAgenda soon.",
+                "format": "md",
+            },
         ],
         "components": [{"name": "PressHero", "status": "beta"}],
         "layout_prefs": {"cta": {"href": "/contact/"}},
@@ -59,9 +65,13 @@ def test_generate_site_pipeline(client, monkeypatch, temp_site):
     result = job_payload["result"]
     assert "summary" in result
     assert result["artifacts"]["pages"]
+    assert result["scaffold"]["pages"][0]["slug"] == "press/launch"
 
     generated = temp_site / "src" / "pages" / "press" / "launch.astro"
     assert generated.exists()
+    markdown = temp_site / "src" / "pages" / "press" / "briefing.md"
+    assert markdown.exists()
+    assert "layout:" in markdown.read_text()
     manifest = temp_site / "src" / "data" / "generated" / "webdev-manifest.json"
     assert manifest.exists()
     data = json.loads(manifest.read_text())

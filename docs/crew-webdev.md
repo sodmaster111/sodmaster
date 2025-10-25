@@ -16,7 +16,7 @@ Each invocation writes content to `app/site/src/pages/` and data manifests under
 
 1. **Plan** – outline navigation, assign role responsibilities, and calculate SEO/perf notes.
 2. **Scaffold** – ensure page directories exist and map payload slugs to Astro files.
-3. **Implement** – render `.astro` (or `.md`) pages and persist supporting JSON.
+3. **Implement** – render `.astro` or Markdown pages and persist supporting JSON.
 4. **Validate** – optionally run `npm ci && npm run build` (guarded by `ENABLE_SITE_CI`) and
    perform a lightweight link checker over `app/site/dist`.
 5. **Commit** – return a JSON report suitable for PR descriptions.
@@ -54,7 +54,8 @@ Log events include `webdev_start`, `webdev_done`, and `webdev_failed` with JSON 
 Fields:
 
 - `pages[]` – required list of Markdown/Astro page definitions. Supported `format` values:
-  `astro`, `md`, or `markdown`. Unknown values raise a validation error.
+  `astro`, `md`, or `markdown`. Markdown pages emit YAML frontmatter with the
+  configured layout.
 - `components[]` – optional metadata stored in `src/data/generated/webdev-manifest.json`.
 - `layout_prefs` – free-form JSON merged into the manifest.
 - `job_id` – optional idempotency key (when provided as top-level field).
