@@ -25,6 +25,10 @@ def test_selftest_endpoint():
     assert payload["meta"]["job_store"] in {"memory", "redis"}
     assert payload["meta"]["redis_connected"] in {True, False}
     assert payload["meta"]["crew_tools"] in {"available", "stub"}
+    assert payload["store"] in {"memory", "redis"}
+    assert payload["redis_connected"] in {True, False}
+    assert payload["store"] == payload["meta"]["job_store"]
+    assert payload["redis_connected"] == payload["meta"]["redis_connected"]
 
     for key in (
         "healthz",
