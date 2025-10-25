@@ -15,10 +15,13 @@ from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
 from app.mktg.routes import router as mktg_router
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
+from app.payments import PaymentRouter
+from app.payments.verification import TransactionVerifier
 from app.ops.routes import router as ops_router
 from app.miniapp.routes import router as miniapp_router
 from app.webdev.routes import router as webdev_router
 from app.root.routes import router as root_router
+from app.security.rate_limit import RateLimiter
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
 from app.subscription import router as subscription_router
@@ -69,6 +72,9 @@ subscription_db_path = Path(
 )
 subscription_repo = SubscriptionRepository(subscription_db_path)
 fundraise_tracker = FundraiseTracker()
+payment_router = PaymentRouter()
+transaction_verifier = TransactionVerifier()
+webhook_rate_limiter = RateLimiter(limit=10, window_seconds=60.0)
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
@@ -88,6 +94,9 @@ app.state.job_store_backend = job_store_backend
 app.state.redis_connected = isinstance(job_store, RedisJobStore)
 app.state.fundraise_tracker = fundraise_tracker
 app.state.treasury_whitelist = {}
+app.state.payment_router = payment_router
+app.state.transaction_verifier = transaction_verifier
+app.state.webhook_rate_limiter = webhook_rate_limiter
 
 app.add_middleware(WordPressScannerShieldMiddleware)
 app.add_middleware(

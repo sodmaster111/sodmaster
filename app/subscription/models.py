@@ -28,6 +28,8 @@ class SubscriptionRecord:
     currency: str
     amount_usd: float
     tx_hash: Optional[str]
+    destination_address: str
+    tx_confirmations: int
     status: SubscriptionStatus
     created_at: datetime
 
@@ -71,6 +73,8 @@ class SubscriptionStatusResponse(BaseModel):
     status: SubscriptionStatus
     amount_usd: float
     tx_hash: Optional[str]
+    destination_address: str
+    tx_confirmations: int
     created_at: datetime
 
 
@@ -79,6 +83,8 @@ class SubscriptionCreateResponse(BaseModel):
 
     invoice_id: str
     payment_url: str
+    payment_uri: str
+    payment_qr: str
     status: SubscriptionStatus
     amount_usd: float
     currency: str

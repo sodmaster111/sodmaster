@@ -34,11 +34,27 @@ class SubscriptionRepository:
                     currency TEXT NOT NULL,
                     amount_usd REAL NOT NULL,
                     tx_hash TEXT,
+                    destination_address TEXT NOT NULL,
+                    tx_confirmations INTEGER NOT NULL DEFAULT 0,
                     status TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 )
                 """
             )
+        self._ensure_columns()
+
+    def _ensure_columns(self) -> None:
+        cursor = self._connection.execute("PRAGMA table_info(subscriptions)")
+        columns = {row[1] for row in cursor.fetchall()}
+        with self._connection:
+            if "destination_address" not in columns:
+                self._connection.execute(
+                    "ALTER TABLE subscriptions ADD COLUMN destination_address TEXT NOT NULL DEFAULT ''"
+                )
+            if "tx_confirmations" not in columns:
+                self._connection.execute(
+                    "ALTER TABLE subscriptions ADD COLUMN tx_confirmations INTEGER NOT NULL DEFAULT 0"
+                )
 
     def create(
         self,
@@ -48,16 +64,37 @@ class SubscriptionRepository:
         currency: str,
         amount_usd: float,
         user_wallet: Optional[str],
+        destination_address: str,
         status: SubscriptionStatus,
         created_at: datetime,
     ) -> SubscriptionRecord:
         with self._lock, self._connection:
             self._connection.execute(
                 """
-                INSERT INTO subscriptions (id, tier, user_wallet, currency, amount_usd, tx_hash, status, created_at)
-                VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
+                INSERT INTO subscriptions (
+                    id,
+                    tier,
+                    user_wallet,
+                    currency,
+                    amount_usd,
+                    tx_hash,
+                    destination_address,
+                    tx_confirmations,
+                    status,
+                    created_at
+                )
+                VALUES (?, ?, ?, ?, ?, NULL, ?, 0, ?, ?)
                 """,
-                (subscription_id, tier, user_wallet, currency, amount_usd, status.value, created_at.isoformat()),
+                (
+                    subscription_id,
+                    tier,
+                    user_wallet,
+                    currency,
+                    amount_usd,
+                    destination_address,
+                    status.value,
+                    created_at.isoformat(),
+                ),
             )
         return SubscriptionRecord(
             id=subscription_id,
@@ -66,13 +103,18 @@ class SubscriptionRepository:
             currency=currency,
             amount_usd=amount_usd,
             tx_hash=None,
+            destination_address=destination_address,
+            tx_confirmations=0,
             status=status,
             created_at=created_at,
         )
 
     def get(self, subscription_id: str) -> Optional[SubscriptionRecord]:
         cursor = self._connection.execute(
-            "SELECT id, tier, user_wallet, currency, amount_usd, tx_hash, status, created_at FROM subscriptions WHERE id = ?",
+            """
+            SELECT id, tier, user_wallet, currency, amount_usd, tx_hash, destination_address, tx_confirmations, status, created_at
+            FROM subscriptions WHERE id = ?
+            """,
             (subscription_id,),
         )
         row = cursor.fetchone()
@@ -85,6 +127,8 @@ class SubscriptionRepository:
             currency=row["currency"],
             amount_usd=row["amount_usd"],
             tx_hash=row["tx_hash"],
+            destination_address=row["destination_address"],
+            tx_confirmations=int(row["tx_confirmations"] or 0),
             status=SubscriptionStatus(row["status"]),
             created_at=datetime.fromisoformat(row["created_at"]),
         )
@@ -97,15 +141,16 @@ class SubscriptionRepository:
         tx_hash: str,
         status: SubscriptionStatus,
         user_wallet: Optional[str] = None,
+        tx_confirmations: int = 0,
     ) -> Optional[SubscriptionRecord]:
         with self._lock, self._connection:
             cursor = self._connection.execute(
                 """
                 UPDATE subscriptions
-                SET currency = ?, tx_hash = ?, status = ?, user_wallet = COALESCE(?, user_wallet)
+                SET currency = ?, tx_hash = ?, status = ?, tx_confirmations = ?, user_wallet = COALESCE(?, user_wallet)
                 WHERE id = ?
                 """,
-                (currency, tx_hash, status.value, user_wallet, subscription_id),
+                (currency, tx_hash, status.value, tx_confirmations, user_wallet, subscription_id),
             )
         if cursor.rowcount == 0:
             return None
@@ -126,7 +171,10 @@ class SubscriptionRepository:
 
     def all(self) -> Iterable[SubscriptionRecord]:
         cursor = self._connection.execute(
-            "SELECT id, tier, user_wallet, currency, amount_usd, tx_hash, status, created_at FROM subscriptions"
+            """
+            SELECT id, tier, user_wallet, currency, amount_usd, tx_hash, destination_address, tx_confirmations, status, created_at
+            FROM subscriptions
+            """
         )
         for row in cursor.fetchall():
             yield SubscriptionRecord(
@@ -136,6 +184,8 @@ class SubscriptionRepository:
                 currency=row["currency"],
                 amount_usd=row["amount_usd"],
                 tx_hash=row["tx_hash"],
+                destination_address=row["destination_address"],
+                tx_confirmations=int(row["tx_confirmations"] or 0),
                 status=SubscriptionStatus(row["status"]),
                 created_at=datetime.fromisoformat(row["created_at"]),
             )

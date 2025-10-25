@@ -82,6 +82,17 @@ SUBSCRIPTION_CONVERSION_RATE = Gauge(
     "Ratio of paid invoices to total subscription invoices.",
 )
 
+PAYMENTS_TOTAL = Counter(
+    "payments_total",
+    "Total number of subscription payment routes partitioned by currency.",
+    ["currency"],
+)
+
+CONFIRMATIONS_PENDING_TOTAL = Gauge(
+    "confirmations_pending_total",
+    "Number of subscription invoices still awaiting blockchain confirmations.",
+)
+
 
 def record_cgo_job_status(status: str, duration_seconds: Optional[float] = None) -> None:
     """Increment CGO job counters and optionally record duration."""
@@ -112,10 +123,22 @@ def record_subscription_created(amount_usd: float) -> None:
     SUBSCRIPTION_COUNT.inc()
 
 
+def record_payment_routed(currency: str) -> None:
+    """Increment currency-specific payment routing counter."""
+
+    PAYMENTS_TOTAL.labels(currency=currency.upper()).inc()
+
+
 def set_subscription_conversion_rate(rate: float) -> None:
     """Update the conversion rate gauge for paid subscriptions."""
 
     SUBSCRIPTION_CONVERSION_RATE.set(rate)
+
+
+def set_confirmations_pending(count: int) -> None:
+    """Set the gauge tracking pending blockchain confirmations."""
+
+    CONFIRMATIONS_PENDING_TOTAL.set(count)
 
 
 def record_crew_job_status(crew: str, status: str) -> None:
