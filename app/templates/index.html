@@ -7,55 +7,163 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>🤖 Sodmaster</h1>
-    <p class="subtitle">World's First Autonomous AI Corporation</p>
-    <p style="margin-bottom: 30px;">Powered by AI agents. Managed by AI. Built for the future.</p>
-    
-    <a href="#subscribe" class="cta-button">Pre-Subscribe Now</a>
-    
-    <div class="features">
-      <div class="feature">
-        <h3>🧠 AI-Powered</h3>
-        <p>Fully autonomous AI agents managing all operations</p>
-      </div>
-      <div class="feature">
-        <h3>🔗 Web3 Native</h3>
-        <p>Built on blockchain with crypto payments</p>
-      </div>
-      <div class="feature">
-        <h3>🚀 Revolutionary</h3>
-        <p>First autonomous corporate structure</p>
-      </div>
-    </div>
-    
-    <div id="subscribe" style="margin-top: 80px;">
-      <h2>Choose Your Plan</h2>
+  <section class="hero">
+    <div class="hero-content">
+      <div class="logo">🤖</div>
+      <h1>Sodmaster</h1>
+      <p class="subtitle">World's First Autonomous AI Corporation</p>
+      <p class="tagline">Powered by AI agents. Managed by AI. Built for the future.</p>
+      
       <div class="features">
         <div class="feature">
-          <h3>Starter</h3>
-          <p style="font-size: 2rem; font-weight: bold;">$100</p>
-          <p>Basic AI services access</p>
+          <div class="feature-icon">🧠</div>
+          <h3>AI-Powered</h3>
+          <p>Fully autonomous AI agents managing all operations</p>
         </div>
         <div class="feature">
-          <h3>Pro</h3>
-          <p style="font-size: 2rem; font-weight: bold;">$250</p>
-          <p>Advanced AI capabilities</p>
+          <div class="feature-icon">🔗</div>
+          <h3>Web3 Native</h3>
+          <p>Built on blockchain with crypto payments</p>
         </div>
         <div class="feature">
-          <h3>Alpha</h3>
-          <p style="font-size: 2rem; font-weight: bold;">$500</p>
-          <p>Full access + priority support</p>
+          <div class="feature-icon">🚀</div>
+          <h3>Revolutionary</h3>
+          <p>First autonomous corporate structure</p>
         </div>
-      </div>
-      
-      <div style="margin-top: 40px; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
-        <h3>Crypto Wallets</h3>
-        <p style="margin: 10px 0;"><strong>BTC:</strong> bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz</p>
-        <p style="margin: 10px 0;"><strong>ETH:</strong> 0x145add48062C43cd93a725F84817Cb503B4CA108</p>
-        <p style="margin: 10px 0;"><strong>TON:</strong> UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my</p>
       </div>
     </div>
+  </section>
+
+  <section class="pricing">
+    <h2>Choose Your Plan</h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$100</div>
+        <p class="plan-description">Basic AI services access</p>
+        <button class="subscribe-btn" onclick="openModal('starter')">Subscribe</button>
+      </div>
+      
+      <div class="price-card featured">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$250</div>
+        <p class="plan-description">Advanced AI capabilities</p>
+        <button class="subscribe-btn" onclick="openModal('pro')">Subscribe</button>
+      </div>
+      
+      <div class="price-card">
+        <div class="plan-name">Alpha</div>
+        <div class="plan-price">$500</div>
+        <p class="plan-description">Full access + priority support</p>
+        <button class="subscribe-btn" onclick="openModal('alpha')">Subscribe</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wallets">
+    <h2>Crypto Wallets</h2>
+    <div class="wallet-list">
+      <div class="wallet-item">
+        <div class="wallet-label">BTC</div>
+        <div class="wallet-address">bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz</div>
+        <button class="copy-btn" onclick="copyWallet('btc', 'bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz')">Copy</button>
+      </div>
+      <div class="wallet-item">
+        <div class="wallet-label">ETH</div>
+        <div class="wallet-address">0x145add48062C43cd93a725F84817Cb503B4CA108</div>
+        <button class="copy-btn" onclick="copyWallet('eth', '0x145add48062C43cd93a725F84817Cb503B4CA108')">Copy</button>
+      </div>
+      <div class="wallet-item">
+        <div class="wallet-label">TON</div>
+        <div class="wallet-address">UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my</div>
+        <button class="copy-btn" onclick="copyWallet('ton', 'UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my')">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal()">×</button>
+      <h3>Subscribe Now</h3>
+      <form id="subscribe-form" onsubmit="submitSubscription(event)">
+        <input type="hidden" id="plan-input" name="plan">
+        
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="your@email.com" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Crypto Currency</label>
+          <select id="crypto" required>
+            <option value="btc">Bitcoin (BTC)</option>
+            <option value="eth">Ethereum (ETH)</option>
+            <option value="ton">TON</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Transaction Hash</label>
+          <input type="text" id="tx_hash" placeholder="Paste your transaction hash" required>
+        </div>
+        
+        <button type="submit" class="submit-btn">Complete Subscription</button>
+      </form>
+    </div>
   </div>
+
+  <script>
+    function openModal(plan) {
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('plan-input').value = plan;
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    function copyWallet(crypto, address) {
+      navigator.clipboard.writeText(address);
+      alert(`✅ ${crypto.toUpperCase()} address copied to clipboard!`);
+    }
+
+    async function submitSubscription(e) {
+      e.preventDefault();
+      
+      const formData = {
+        email: document.getElementById('email').value,
+        plan: document.getElementById('plan-input').value,
+        crypto: document.getElementById('crypto').value,
+        tx_hash: document.getElementById('tx_hash').value
+      };
+
+      try {
+        const response = await fetch('/api/v1/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert('✅ Subscription created successfully! Check your email.');
+          closeModal();
+          document.getElementById('subscribe-form').reset();
+        } else {
+          const error = await response.json();
+          alert('❌ Error: ' + (error.detail || 'Failed to create subscription'));
+        }
+      } catch (error) {
+        alert('❌ Network error. Please try again.');
+      }
+    }
+
+    // Close modal on outside click
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+  </script>
 </body>
 </html>
