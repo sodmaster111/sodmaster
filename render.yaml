@@ -2,6 +2,18 @@ services:
   - type: web
     name: sodmaster-c-unit
     env: python
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: ./start_web.sh
-    healthCheckPath: /healthz
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: static
+    name: sodmaster-corporate-site
+    env: static
+    buildCommand: cd site && npm install && npm run build
+    staticPublishPath: site/dist
+    pullRequestPreviewsEnabled: true

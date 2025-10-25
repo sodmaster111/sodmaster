@@ -68,3 +68,19 @@ BTC_WALLET_ADDRESS=bc1q...
 2. Render запускает: pip install -r requirements.txt
 3. Render стартует: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 4. Health check: GET /health должен вернуть 200 OK
+
+## Корпоративная структура Sodmaster
+
+### C-Suite AI Executives
+- CEO-AI: Executive Command Unit
+- CTO-AI: Technology Command Unit
+- CFO-AI: Financial Command Unit
+- CMO-AI: Marketing Command Unit
+- COO-AI: Operations Command Unit
+- CISO-AI: Security Command Unit
+
+### CrewAI Implementation
+Sodmaster использует CrewAI framework для координации AI-агентов.
+Каждый C-Unit имеет специализированные подразделения с автономными агентами.
+
+Подробная структура доступна на: https://sodmaster.online/about
