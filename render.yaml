@@ -1,55 +1,6 @@
----
 services:
   - type: web
     name: sodmaster-c-unit
     env: python
-    plan: free
-    region: oregon
-    buildCommand: pip install -r requirements.txt
     startCommand: ./start_web.sh
     healthCheckPath: /healthz
-    autoDeploy: true
-    envVars:
-      - key: OPENROUTER_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: LEONARDO_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: OPENAI_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: ANTHROPIC_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: EXA_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: SERPER_API_KEY
-        fromService:
-          type: envVarGroup
-          name: sodmaster-keys
-      - key: BTCPAY_HOST
-        value: "btcpay_placeholder"
-      - key: BTCPAY_STORE_ID
-        value: "store_id_placeholder"
-      - key: BTCPAY_API_KEY
-        value: "api_key_placeholder"
-      - key: QDRANT_HOST
-        value: "qdrant_placeholder"
-
-  - type: static
-    name: sodmaster-site
-    rootDir: app/site
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: SITE_URL
-        sync: false
-
----
