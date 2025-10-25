@@ -1,129 +1,146 @@
 ---
-const title = "Sodmaster - World's First Autonomous AI Corporation";
-const description = "Fully autonomous AI corporation powered by specialized AI agents across all departments - from development to finance to marketing";
----
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import StatsBar from '../components/StatsBar.astro';
+import FeatureCard from '../components/FeatureCard.astro';
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="description" content={description}>
-  
-  <!-- SEO Meta Tags -->
-  <meta property="og:title" content={title}>
-  <meta property="og:description" content={description}>
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://sodmaster.online">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content={title}>
-  <meta name="twitter:description" content={description}>
-  
-  <!-- Canonical -->
-  <link rel="canonical" href="https://sodmaster.online">
-</head>
-<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
-  <nav class="container mx-auto px-6 py-6">
-    <div class="flex justify-between items-center">
-      <a href="/" class="text-2xl font-bold">🤖 Sodmaster</a>
-      <div class="space-x-6">
-        <a href="/" class="text-purple-300">Home</a>
-        <a href="/about" class="hover:text-purple-300">About</a>
-        <a href="/admin" class="hover:text-purple-300">Admin</a>
+const featureIcons = {
+  brain: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M7.5 7.5A3 3 0 0110 4h4a3 3 0 013 3.5 3 3 0 012 2.83V13a3 3 0 01-2 2.83A3 3 0 0117 19h-2m-6 0H7a3 3 0 01-3-3v-2.67A3 3 0 016 11V9.33A3 3 0 017.5 7.5z"/></svg>`,
+  shield: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 5-3.5 9-7 9s-7-4-7-9V7l7-4z"/></svg>`,
+  rocket: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4m0 0l3-3a8 8 0 004-7V5l-2-2h-2a8 8 0 00-7 4l-3 3 3 3m4 4l3 3"/></svg>`,
+  chart: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M7 15v-4m5 4V9m5 6V5"/></svg>`,
+  users: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20v-2a3 3 0 00-3-3H6a3 3 0 00-3 3v2m18 0v-2a3 3 0 00-2-2.82M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 6a3 3 0 01-2-2.82A3 3 0 1014 7"/></svg>`,
+  globe: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.5 0 4.5-4 4.5-9S14.5 3 12 3 7.5 7 7.5 12 9.5 21 12 21zm0 0c3.866 0 7-4.03 7-9s-3.134-9-7-9-7 4.03-7 9 3.134 9 7 9z"/></svg>`,
+};
+
+const stats = [
+  { value: '24/7', label: 'Operations' },
+  { value: '50+', label: 'AI Agents' },
+  { value: '99.9%', label: 'Uptime' },
+];
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Sodmaster Autonomous Corporation',
+  url: 'https://sodmaster.online',
+  logo: 'https://sodmaster.online/favicon.svg',
+  sameAs: [
+    'https://twitter.com/sodmaster',
+    'https://www.linkedin.com/company/sodmaster',
+    'https://github.com/sodmaster111',
+  ],
+  description:
+    'Sodmaster is the first autonomous AI corporation with a multi-agent operating system delivering enterprise-grade reliability and growth.',
+  foundingDate: '2024-01-01',
+};
+---
+<Layout
+  title="Sodmaster | The World's First Autonomous AI Corporation"
+  description="50+ specialized AI agents working 24/7 to build, operate, and scale a fully autonomous enterprise platform."
+  structuredData={structuredData}
+>
+  <Hero
+    title="The World's First Autonomous AI Corporation"
+    subtitle="50+ specialized AI agents working 24/7 to build, operate, and scale a fully autonomous business"
+    primaryCta={{ label: 'Explore Our Technology', href: '/technology' }}
+    secondaryCta={{ label: 'Start Your Subscription', href: '/pricing' }}
+  />
+
+  <StatsBar stats={stats} />
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Enterprise Automation without Compromise</h2>
+      <p class="section-subtitle">
+        Sodmaster orchestrates autonomous AI teams across engineering, growth, finance, and operations, enabling a fully self-running
+        corporation that delivers measurable outcomes with zero downtime.
+      </p>
+      <div class="grid grid-3">
+        <FeatureCard
+          icon={featureIcons.brain}
+          title="Autonomous Intelligence"
+          description="CrewAI-powered multi-agent swarms coordinate development, deployment, and optimization without human intervention."
+        />
+        <FeatureCard
+          icon={featureIcons.shield}
+          title="Zero-Trust Security"
+          description="Continuous threat modeling, encrypted data pipelines, and compliance automation keep every workflow secure."
+        />
+        <FeatureCard
+          icon={featureIcons.rocket}
+          title="Rapid Innovation"
+          description="Weekly product releases executed autonomously with integrated QA, canary deployments, and telemetry-driven feedback."
+        />
+        <FeatureCard
+          icon={featureIcons.chart}
+          title="Live Intelligence"
+          description="Unified dashboards stream API volume, revenue, and uptime metrics in real-time across departments."
+        />
+        <FeatureCard
+          icon={featureIcons.users}
+          title="Specialized Crews"
+          description="Dedicated AI departments for DevOps, Finance, Marketing, and Support collaborate through shared protocols."
+        />
+        <FeatureCard
+          icon={featureIcons.globe}
+          title="Global Scale"
+          description="Multi-cloud distribution, blockchain-native treasury, and localized AI agents ensure resilience worldwide."
+        />
       </div>
     </div>
-  </nav>
+  </section>
 
-  <main>
-    <section class="container mx-auto px-6 py-20 text-center">
-      <div class="animate-bounce text-8xl mb-8">🤖</div>
-      <h1 class="text-6xl font-black mb-6">Sodmaster</h1>
-      <p class="text-3xl mb-4 text-purple-200">World's First Autonomous AI Corporation</p>
-      <p class="text-xl mb-12 text-gray-300 max-w-3xl mx-auto">
-        Powered by AI agents. Managed by AI. Built for the future of autonomous business.
-      </p>
-      
-      <div class="flex gap-4 justify-center">
-        <a href="/about" class="bg-white text-purple-900 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition">
-          Meet Our AI Team
-        </a>
-        <a href="#pricing" class="bg-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition">
-          Subscribe Now
-        </a>
+  <section>
+    <div class="container">
+      <h2 class="section-title">Technology Stack</h2>
+      <p class="section-subtitle">Sodmaster integrates proven enterprise technologies with advanced autonomous orchestration.</p>
+      <div class="logo-grid">
+        <span class="logo-item">Python</span>
+        <span class="logo-item">FastAPI</span>
+        <span class="logo-item">CrewAI</span>
+        <span class="logo-item">OpenAI</span>
+        <span class="logo-item">TON</span>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="container mx-auto px-6 py-20">
-      <h2 class="text-4xl font-bold text-center mb-16">Our AI C-Suite</h2>
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">👑</div>
-          <h3 class="text-2xl font-bold mb-2">CEO-AI</h3>
-          <p class="text-gray-300">Strategic vision and overall coordination</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">⚙️</div>
-          <h3 class="text-2xl font-bold mb-2">CTO-AI</h3>
-          <p class="text-gray-300">Technical infrastructure and innovation</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">💰</div>
-          <h3 class="text-2xl font-bold mb-2">CFO-AI</h3>
-          <p class="text-gray-300">Crypto treasury and financial analytics</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">📈</div>
-          <h3 class="text-2xl font-bold mb-2">CMO-AI</h3>
-          <p class="text-gray-300">Growth hacking and brand development</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">⚡</div>
-          <h3 class="text-2xl font-bold mb-2">COO-AI</h3>
-          <p class="text-gray-300">Operations and customer success</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur p-8 rounded-2xl border border-white/20 hover:scale-105 transition">
-          <div class="text-5xl mb-4">🛡️</div>
-          <h3 class="text-2xl font-bold mb-2">CISO-AI</h3>
-          <p class="text-gray-300">Security and compliance</p>
+  <section>
+    <div class="container cta">
+      <div class="glass-card cta-card">
+        <h2>Join the AI Revolution</h2>
+        <p>
+          Partner with the first autonomous corporation to unlock continuous innovation, resilient operations, and compounding growth for
+          your enterprise.
+        </p>
+        <div class="button-row">
+          <a class="gradient-button" href="/contact">Book an Executive Briefing</a>
+          <a class="ghost-button" href="/pricing">View Pricing Tiers</a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
+</Layout>
 
-    <section id="pricing" class="container mx-auto px-6 py-20">
-      <h2 class="text-4xl font-bold text-center mb-16">Choose Your Plan</h2>
-      <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <div class="bg-white/5 backdrop-blur rounded-3xl p-8 border border-purple-500/30">
-          <h3 class="text-2xl font-bold mb-4">Starter</h3>
-          <p class="text-5xl font-black mb-4">$100</p>
-          <p class="text-gray-300 mb-8">Basic AI services access</p>
-          <a href="/api/v1/wallets" class="block bg-purple-600 text-center py-3 rounded-xl font-bold hover:bg-purple-700 transition">
-            Subscribe
-          </a>
-        </div>
-        <div class="bg-white/10 backdrop-blur rounded-3xl p-8 border-2 border-purple-400 scale-105">
-          <div class="text-xs bg-purple-500 text-white px-3 py-1 rounded-full inline-block mb-4">POPULAR</div>
-          <h3 class="text-2xl font-bold mb-4">Pro</h3>
-          <p class="text-5xl font-black mb-4">$250</p>
-          <p class="text-gray-300 mb-8">Advanced AI capabilities</p>
-          <a href="/api/v1/wallets" class="block bg-purple-600 text-center py-3 rounded-xl font-bold hover:bg-purple-700 transition">
-            Subscribe
-          </a>
-        </div>
-        <div class="bg-white/5 backdrop-blur rounded-3xl p-8 border border-purple-500/30">
-          <h3 class="text-2xl font-bold mb-4">Alpha</h3>
-          <p class="text-5xl font-black mb-4">$500</p>
-          <p class="text-gray-300 mb-8">Full access + priority support</p>
-          <a href="/api/v1/wallets" class="block bg-purple-600 text-center py-3 rounded-xl font-bold hover:bg-purple-700 transition">
-            Subscribe
-          </a>
-        </div>
-      </div>
-    </section>
-  </main>
+<style>
+  .cta-card {
+    display: grid;
+    gap: 20px;
+    text-align: center;
+    padding: 64px;
+    background: radial-gradient(circle at 0% 0%, rgba(102, 126, 234, 0.25), transparent 60%),
+      radial-gradient(circle at 100% 0%, rgba(0, 217, 255, 0.25), transparent 60%),
+      var(--color-surface);
+  }
 
-  <footer class="container mx-auto px-6 py-12 text-center text-gray-400">
-    <p>© 2025 Sodmaster AI Corporation. Powered by autonomous AI agents.</p>
-  </footer>
-</body>
-</html>
+  .cta-card p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 1.05rem;
+  }
+
+  .cta {
+    display: flex;
+    justify-content: center;
+  }
+</style>

@@ -1,0 +1,79 @@
+---
+const { name, role, description, achievements, image } = Astro.props;
+---
+<div class="executive glass-card">
+  <img src={image} alt={`${name} portrait`} loading="lazy" />
+  <div>
+    <h3>{name}</h3>
+    <span class="role">{role}</span>
+    <p>{description}</p>
+    <ul>
+      {achievements.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .executive {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 160px 1fr;
+    align-items: center;
+  }
+
+  img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 217, 255, 0.25);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .role {
+    display: inline-flex;
+    margin: 10px 0 16px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(102, 126, 234, 0.18);
+    color: var(--color-accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  p {
+    margin: 0 0 12px;
+    color: var(--color-muted);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--color-text);
+    display: grid;
+    gap: 6px;
+  }
+
+  li {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 720px) {
+    .executive {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    ul {
+      text-align: left;
+    }
+  }
+</style>
