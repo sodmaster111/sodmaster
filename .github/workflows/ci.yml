@@ -35,6 +35,41 @@ jobs:
       - name: Run tests
         run: pytest
 
+  content_build:
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check for duplicate slugs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import content_generator as cg
+
+          posts = cg.load_posts(Path("content/blog/posts.json"))
+          cg.ensure_unique_slugs(posts)
+          print(f"Validated {len(posts)} post specifications")
+          PY
+
+      - name: Validate branch naming for generated content PRs
+        if: github.event_name == 'pull_request'
+        run: |
+          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          if [[ ! "$REF_NAME" =~ ^content/generated/[0-9]{8}-[0-9]+$ ]]; then
+            echo "Branch name '$REF_NAME' must follow content/generated/YYYYMMDD-X format"
+            exit 1
+          fi
+
+      - name: Generate content
+        run: python content_generator.py --overwrite --output-dir content/generated
+
   trigger-external-probe:
     name: Trigger external probe workflow
     runs-on: ubuntu-latest
