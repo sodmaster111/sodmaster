@@ -4,8 +4,10 @@ The Sodmaster Corporation
 
 ## Deployment notes
 
-- Render uses the Python version pinned in `runtime.txt`. Update that file when
-  the runtime needs to change.
+- Render uses the Python version pinned in `runtime.txt`. We target
+  `python-3.11.9`, which is the latest 3.11 release supported by Render's
+  build image. Update that file when the platform announces support for a newer
+  runtime.
 - Configure the Render service (or your chosen host) with the `GIT_SHA`,
   `BUILD_TIME`, and `PY_RUNTIME` environment variables so the `/version` endpoint
   can expose accurate build metadata. The deploy workflow also publishes
