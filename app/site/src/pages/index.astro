@@ -1,49 +1,137 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import products from '../data/products.json';
+import tiers from '../data/tiers';
+import keywords from '../seo/keywords.json';
+
+const heroCtaHref = '/subscribe/';
 ---
-<BaseLayout title="Sodmaster" description="AI-assisted sod logistics and care">
+<BaseLayout title="Sodmaster Subscriptions" description="Crypto-ready subscription tiers for modern turf operations." keywords={keywords}>
   <section class="hero">
-    <p class="eyebrow">Enterprise sod intelligence</p>
-    <h1>Grow greener revenue with AI-automated turf operations.</h1>
-    <p class="lede">
-      Sodmaster orchestrates procurement, irrigation, and installation workflows so your grounds team can focus on outcomes—not spreadsheets.
-    </p>
-    <div class="actions">
-      <a class="primary" href="/catalog/">Explore catalog</a>
-      <a class="ghost" href="#contact">Book a consult</a>
+    <div class="hero-copy">
+      <p class="eyebrow">Subscription platform</p>
+      <h1>Run turf subscriptions that settle instantly in crypto or USD.</h1>
+      <p class="lede">
+        Sodmaster orchestrates proactive irrigation, crew dispatching, and sustainability analytics under one subscription. Pick a tier, share a wallet, and start getting AI-powered grounds insights without procurement friction.
+      </p>
+      <div class="actions">
+        <a class="primary" href={heroCtaHref}>Explore plans</a>
+        <a class="ghost" href="/blog/">Read the playbook</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="glow"></div>
+      <div class="stat-card">
+        <p class="label">Water savings</p>
+        <p class="value">18% avg</p>
+        <p class="hint">Measured across Growth tier clients in 2023.</p>
+      </div>
+      <div class="stat-card alt">
+        <p class="label">Crypto settlement</p>
+        <p class="value">&lt; 30s</p>
+        <p class="hint">BTC, ETH, and TON supported natively.</p>
+      </div>
     </div>
   </section>
 
-  <section class="catalog-preview">
+  <section class="tiers" id="tiers">
     <div class="section-heading">
-      <h2>Flagship capabilities</h2>
-      <a href="/catalog/">View all services</a>
+      <h2>Subscription tiers built for every grounds crew</h2>
+      <p>All plans include 24/7 telemetry, AI irrigation guidance, and crypto-native billing.</p>
     </div>
     <div class="grid">
-      {products.slice(0, 3).map((product) => (
-        <article>
-          <h3>
-            <a href={`/catalog/${product.slug}/`}>{product.title}</a>
-          </h3>
-          <p>{product.summary}</p>
+      {tiers.map((tier) => (
+        <article class={`tier-card ${tier.highlight ? 'highlight' : ''}`}>
+          <header>
+            <h3>{tier.name}</h3>
+            <p class="price">${tier.price}<span>/mo</span></p>
+            <p class="summary">{tier.summary}</p>
+          </header>
+          <ul>
+            {tier.perks.map((perk) => (
+              <li>{perk}</li>
+            ))}
+          </ul>
+          <a class="select" href={`/subscribe/?tier=${tier.id}`}>Subscribe</a>
         </article>
       ))}
     </div>
   </section>
 
-  <section id="contact" class="contact">
-    <h2>Let’s architect your turf program</h2>
-    <p>
-      Send a note to <a href="mailto:hello@sodmaster.example">hello@sodmaster.example</a> and our concierge will respond within one business day.
-    </p>
+  <section class="cta" id="contact">
+    <div class="cta-inner">
+      <h2>Ready to activate crypto-friendly turf care?</h2>
+      <p>Send a note to <a href="mailto:hello@sodmaster.example">hello@sodmaster.example</a> or launch a subscription checkout below.</p>
+      <div class="cta-actions">
+        <a class="primary" href="/subscribe/">Start subscription checkout</a>
+        <a class="ghost" href="/blog/">View rollout guides</a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
+
 <style>
   .hero {
     display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .hero-copy {
+    display: grid;
     gap: 1.5rem;
-    text-align: left;
+  }
+
+  .hero-visual {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+  }
+
+  .glow {
+    width: clamp(12rem, 40vw, 22rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(24, 100, 171, 0.4), transparent 70%);
+    filter: blur(0.5rem);
+  }
+
+  .stat-card {
+    position: absolute;
+    top: 15%;
+    left: 15%;
+    padding: 1.25rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 1rem 2.5rem rgba(13, 27, 42, 0.15);
+    width: max-content;
+  }
+
+  .stat-card.alt {
+    top: auto;
+    bottom: 5%;
+    left: 40%;
+  }
+
+  .stat-card .label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: #3a506b;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card .value {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #1864ab;
+  }
+
+  .stat-card .hint {
+    margin: 0.35rem 0 0;
+    color: #33415c;
+    font-size: 0.95rem;
+    max-width: 12rem;
   }
 
   .eyebrow {
@@ -55,13 +143,13 @@ import products from '../data/products.json';
   }
 
   h1 {
-    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-size: clamp(2.75rem, 6vw, 4rem);
     margin: 0;
   }
 
   .lede {
-    font-size: 1.125rem;
-    line-height: 1.7;
+    font-size: 1.2rem;
+    line-height: 1.8;
     max-width: 38rem;
     color: #33415c;
   }
@@ -74,30 +162,41 @@ import products from '../data/products.json';
 
   .primary,
   .ghost {
-    padding: 0.85rem 1.5rem;
+    padding: 0.9rem 1.6rem;
     border-radius: 999px;
     font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .primary {
     background: linear-gradient(135deg, #0b7285, #1864ab);
     color: #fff;
+    box-shadow: 0 0.75rem 1.5rem rgba(24, 100, 171, 0.3);
   }
 
   .ghost {
     border: 2px solid #1864ab;
     color: #1864ab;
+    background: transparent;
   }
 
-  .catalog-preview {
-    margin-top: 5rem;
+  .primary:hover,
+  .primary:focus,
+  .ghost:hover,
+  .ghost:focus {
+    transform: translateY(-2px);
+  }
+
+  .tiers {
+    margin-top: 6rem;
+    display: grid;
+    gap: 2.5rem;
   }
 
   .section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
+    display: grid;
+    gap: 0.75rem;
+    max-width: 42rem;
   }
 
   .grid {
@@ -105,24 +204,111 @@ import products from '../data/products.json';
     gap: 1.5rem;
   }
 
-  .grid article {
+  .tier-card {
     background: #fff;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    border-radius: 1.25rem;
+    box-shadow: 0 1.5rem 3rem rgba(13, 27, 42, 0.12);
+    display: grid;
+    gap: 1.5rem;
   }
 
-  .contact {
-    margin-top: 6rem;
-    background: #fff;
-    padding: 2.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+  .tier-card.highlight {
+    border: 2px solid #1864ab;
+    transform: translateY(-0.4rem);
   }
 
-  @media (min-width: 48rem) {
+  .tier-card header {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .price {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .price span {
+    font-size: 1rem;
+    color: #627b94;
+    font-weight: 500;
+  }
+
+  .summary {
+    margin: 0;
+    color: #33415c;
+    line-height: 1.6;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  li::before {
+    content: '•';
+    color: #1864ab;
+    margin-right: 0.5rem;
+  }
+
+  .select {
+    justify-self: start;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    background: #0b7285;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .cta {
+    margin-top: 7rem;
+  }
+
+  .cta-inner {
+    background: linear-gradient(135deg, #102a43, #1864ab);
+    color: #f6f9fc;
+    padding: 3rem;
+    border-radius: 1.5rem;
+    display: grid;
+    gap: 1.5rem;
+    box-shadow: 0 2rem 4rem rgba(16, 42, 67, 0.3);
+  }
+
+  .cta-inner a {
+    color: inherit;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  @media (min-width: 62rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
     .grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .stat-card,
+    .stat-card.alt {
+      position: relative;
+      left: auto;
+      top: auto;
+      bottom: auto;
+    }
+
+    .hero-visual {
+      justify-items: stretch;
     }
   }
 </style>

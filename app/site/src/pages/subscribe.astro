@@ -1,0 +1,317 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import tiers from '../data/tiers';
+import keywords from '../seo/keywords.json';
+
+const defaultTier = tiers[1] ?? tiers[0];
+const conversionRates = {
+  BTC: 1 / 64000,
+  ETH: 1 / 3200,
+  TON: 1 / 6.2,
+};
+const tierPriceMap = tiers.reduce((acc, tier) => ({ ...acc, [tier.id]: tier.price }), {});
+---
+<BaseLayout title="Subscribe to Sodmaster" description="Select a Sodmaster subscription tier and generate a crypto-ready invoice." keywords={keywords}>
+  <section class="subscribe">
+    <header>
+      <p class="eyebrow">Checkout</p>
+      <h1>Choose your subscription tier and convert USD instantly.</h1>
+      <p class="lede">Pick a plan, confirm your preferred settlement currency, and share the generated payment link with your treasury desk.</p>
+    </header>
+    <form class="subscription-form" id="subscription-form">
+      <div class="field">
+        <label for="tier">Subscription tier</label>
+        <select id="tier" name="tier" autocomplete="off">
+          {tiers.map((tier) => (
+            <option value={tier.id} selected={tier.id === defaultTier?.id}>{tier.name} · ${tier.price}/mo</option>
+          ))}
+        </select>
+      </div>
+      <div class="field">
+        <label for="currency">Settlement currency</label>
+        <select id="currency" name="currency" autocomplete="off">
+          {Object.keys(conversionRates).map((code) => (
+            <option value={code}>{code}</option>
+          ))}
+        </select>
+      </div>
+      <div class="quote">
+        <p class="label">USD amount</p>
+        <p class="value" id="usd-amount">${defaultTier?.price.toFixed(2)}</p>
+      </div>
+      <div class="quote">
+        <p class="label">Converted amount</p>
+        <p class="value" id="crypto-amount">0.000000 BTC</p>
+      </div>
+      <div class="qr-panel" aria-live="polite">
+        <div class="qr" role="img" aria-label="Payment QR code placeholder">
+          <div class="qr-inner" data-qr-value></div>
+        </div>
+        <div class="qr-meta">
+          <p class="label">Payment link</p>
+          <input id="payment-url" type="text" readonly value="" />
+          <button type="button" id="copy-link">Copy link</button>
+        </div>
+      </div>
+      <p class="helper">Submitting the form will request an invoice from <code>/api/v1/subscribe/create</code>. Paid invoices trigger the webhook at <code>/api/v1/subscribe/webhook</code>.</p>
+      <button type="submit" class="primary">Create invoice</button>
+    </form>
+  </section>
+</BaseLayout>
+
+<script type="module">
+  const rates = { BTC: ${conversionRates.BTC.toPrecision(8)}, ETH: ${conversionRates.ETH.toPrecision(8)}, TON: ${conversionRates.TON.toPrecision(8)} };
+  const tierPrices = ${JSON.stringify(tierPriceMap)};
+  const form = document.querySelector('#subscription-form');
+  const tierSelect = document.querySelector('#tier');
+  const currencySelect = document.querySelector('#currency');
+  const usdAmount = document.querySelector('#usd-amount');
+  const cryptoAmount = document.querySelector('#crypto-amount');
+  const paymentUrl = document.querySelector('#payment-url');
+  const qrValue = document.querySelector('[data-qr-value]');
+  const copyButton = document.querySelector('#copy-link');
+
+  const precisionByCurrency = {
+    BTC: 6,
+    ETH: 5,
+    TON: 2,
+  };
+
+  function updateQuote() {
+    const tier = tierSelect.value;
+    const currency = currencySelect.value;
+    const usd = tierPrices[tier] ?? 0;
+    const rate = rates[currency] ?? 0;
+    const converted = usd * rate;
+    const precision = precisionByCurrency[currency] ?? 6;
+
+    usdAmount.textContent = `$${usd.toFixed(2)}`;
+    cryptoAmount.textContent = `${converted.toFixed(precision)} ${currency}`;
+    paymentUrl.value = `https://pay.sodmaster.example/invoice/${tier}?currency=${currency.toLowerCase()}`;
+    if (qrValue) {
+      qrValue.textContent = `${currency}:${converted.toFixed(precision)}`;
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const payload = {
+      tier: tierSelect.value,
+      currency: currencySelect.value,
+      amount_usd: tierPrices[tierSelect.value] ?? 0,
+    };
+
+    const response = await fetch('/api/v1/subscribe/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      alert('Unable to create invoice. Please retry or contact Sodmaster support.');
+      return;
+    }
+
+    const data = await response.json();
+    paymentUrl.value = data.payment_url;
+    if (qrValue) {
+      qrValue.textContent = `${payload.currency}:${cryptoAmount.textContent?.split(' ')[0]}`;
+    }
+    alert('Invoice created! Share the payment link with your treasury team.');
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(paymentUrl.value);
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => (copyButton.textContent = 'Copy link'), 1800);
+    } catch (error) {
+      console.error('Clipboard copy failed', error);
+    }
+  }
+
+  tierSelect.addEventListener('change', updateQuote);
+  currencySelect.addEventListener('change', updateQuote);
+  form.addEventListener('submit', handleSubmit);
+  copyButton.addEventListener('click', handleCopy);
+
+  updateQuote();
+</script>
+
+<style>
+  .subscribe {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  header {
+    display: grid;
+    gap: 1rem;
+    max-width: 48rem;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #3a506b;
+  }
+
+  .lede {
+    font-size: 1.15rem;
+    color: #33415c;
+    line-height: 1.7;
+  }
+
+  .subscription-form {
+    background: #fff;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    display: grid;
+    gap: 1.75rem;
+    box-shadow: 0 1.5rem 3rem rgba(13, 27, 42, 0.12);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  label {
+    font-weight: 600;
+    color: #102a43;
+  }
+
+  select {
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  .quote {
+    display: grid;
+    gap: 0.25rem;
+    background: #f6f9fc;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .quote .label {
+    margin: 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3a506b;
+  }
+
+  .quote .value {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1864ab;
+  }
+
+  .qr-panel {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .qr {
+    width: 9rem;
+    aspect-ratio: 1;
+    border-radius: 1rem;
+    background: repeating-linear-gradient(45deg, #0d1b2a 0, #0d1b2a 6px, #f6f9fc 6px, #f6f9fc 12px);
+    display: grid;
+    place-items: center;
+  }
+
+  .qr-inner {
+    background: #f6f9fc;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .qr-meta {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  input[type='text'] {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+  }
+
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #copy-link {
+    justify-self: start;
+    background: #e2e8f0;
+    color: #102a43;
+  }
+
+  .primary {
+    justify-self: start;
+    background: linear-gradient(135deg, #0b7285, #1864ab);
+    color: #fff;
+    box-shadow: 0 0.75rem 1.5rem rgba(24, 100, 171, 0.25);
+  }
+
+  .helper {
+    margin: 0;
+    color: #486581;
+    line-height: 1.5;
+  }
+
+  .helper code {
+    background: rgba(13, 27, 42, 0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.4rem;
+  }
+
+  @media (min-width: 56rem) {
+    .subscription-form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .field:nth-of-type(1),
+    .field:nth-of-type(2) {
+      grid-column: span 1;
+    }
+
+    .quote:nth-of-type(3) {
+      grid-column: 1;
+    }
+
+    .quote:nth-of-type(4) {
+      grid-column: 2;
+    }
+
+    .qr-panel {
+      grid-column: span 2;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+    }
+
+    .helper {
+      grid-column: span 2;
+    }
+
+    .primary {
+      grid-column: 1;
+    }
+  }
+</style>

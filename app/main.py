@@ -1,5 +1,7 @@
 import inspect
 import logging
+import os
+from pathlib import Path
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request, Response, status
@@ -8,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.a2a import router as a2a_router
-from app.audit.service import bootstrap_default_audit_trail
+from app.audit.service import CUnit, bootstrap_default_audit_trail
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
@@ -20,6 +22,8 @@ from app.webdev.routes import router as webdev_router
 from app.root.routes import router as root_router
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
+from app.subscription import router as subscription_router
+from app.subscription.repository import SubscriptionRepository
 from app.version_info import load_version
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -48,6 +52,19 @@ job_store = get_job_store()
 job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
 
 audit_trail = bootstrap_default_audit_trail()
+audit_trail.register_c_unit(
+    CUnit(
+        id="core.subscription",
+        name="Subscription Billing",
+        description="Subscription invoicing and settlement for crypto-ready plans",
+        owners=("product", "finance"),
+    )
+)
+
+subscription_db_path = Path(
+    os.environ.get("SUBSCRIPTION_DB_PATH", "/tmp/sodmaster_subscriptions.db")
+)
+subscription_repo = SubscriptionRepository(subscription_db_path)
 
 logging.info(
     "Application startup | python_version=%s git_sha=%s build_time=%s job_store=%s",
@@ -62,6 +79,7 @@ if job_store_backend == "memory":
 
 app.state.job_store = job_store
 app.state.audit_trail = audit_trail
+app.state.subscription_repo = subscription_repo
 app.state.job_store_backend = job_store_backend
 app.state.redis_connected = isinstance(job_store, RedisJobStore)
 
@@ -107,6 +125,7 @@ app.include_router(ops_router)
 app.include_router(webdev_router, prefix="/api/v1/webdev")
 app.include_router(mktg_router, prefix="/api/v1/mktg")
 app.include_router(miniapp_router)
+app.include_router(subscription_router)
 
 
 @app.middleware("http")

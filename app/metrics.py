@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from app.prometheus import Counter, Histogram, Info
+from app.prometheus import Counter, Gauge, Histogram, Info
 
 
 A2A_JOBS_TOTAL = Counter(
@@ -67,6 +67,21 @@ WAF_BLOCK_TOTAL = Counter(
 
 APP_INFO = Info("app_info", "Application build and runtime information.")
 
+SUBSCRIPTION_TOTAL_USD = Counter(
+    "subscription_total_usd",
+    "Aggregate USD value of created subscription invoices.",
+)
+
+SUBSCRIPTION_COUNT = Counter(
+    "subscription_count",
+    "Number of subscription invoices issued.",
+)
+
+SUBSCRIPTION_CONVERSION_RATE = Gauge(
+    "subscription_conversion_rate",
+    "Ratio of paid invoices to total subscription invoices.",
+)
+
 
 def record_cgo_job_status(status: str, duration_seconds: Optional[float] = None) -> None:
     """Increment CGO job counters and optionally record duration."""
@@ -88,6 +103,19 @@ def record_http_request(path: str) -> None:
     """Record a handled HTTP request for the provided path."""
 
     HTTP_REQUESTS_TOTAL.labels(path=path).inc()
+
+
+def record_subscription_created(amount_usd: float) -> None:
+    """Increment metrics for newly created subscription invoices."""
+
+    SUBSCRIPTION_TOTAL_USD.inc(amount_usd)
+    SUBSCRIPTION_COUNT.inc()
+
+
+def set_subscription_conversion_rate(rate: float) -> None:
+    """Update the conversion rate gauge for paid subscriptions."""
+
+    SUBSCRIPTION_CONVERSION_RATE.set(rate)
 
 
 def record_crew_job_status(crew: str, status: str) -> None:

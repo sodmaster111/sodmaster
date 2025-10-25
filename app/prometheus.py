@@ -9,6 +9,7 @@ try:  # pragma: no cover - exercised only when dependency is available
     from prometheus_client import (  # type: ignore
         CONTENT_TYPE_LATEST as CONTENT_TYPE_LATEST,
         Counter as Counter,
+        Gauge as Gauge,
         Histogram as Histogram,
         Info as Info,
         generate_latest as generate_latest,
@@ -94,6 +95,21 @@ except Exception:  # pragma: no cover - fallback for minimal environments
             self._value += amount
             self._metric._values[self._label_values] = self._value
 
+    class GaugeChild(_MetricChild):
+        def __init__(self, metric: "Gauge", label_values: Tuple[str, ...]):
+            super().__init__(metric, label_values)
+            self._value = 0.0
+
+        def set(self, value: float) -> None:
+            self._value = value
+            self._metric._values[self._label_values] = self._value
+
+        def inc(self, amount: float = 1.0) -> None:
+            self.set(self._value + amount)
+
+        def dec(self, amount: float = 1.0) -> None:
+            self.set(self._value - amount)
+
     class Counter(_BaseMetric):
         type_name = "counter"
 
@@ -106,6 +122,32 @@ except Exception:  # pragma: no cover - fallback for minimal environments
 
         def _new_child(self, label_values: Tuple[str, ...]) -> CounterChild:
             return CounterChild(self, label_values)
+
+        def collect(self) -> List[str]:
+            lines: List[str] = []
+            for label_values, value in self._values.items():
+                labels = _format_labels(self.labelnames, label_values)
+                lines.append(f"{self.name}{labels} {value}")
+            return lines
+
+    class Gauge(_BaseMetric):
+        type_name = "gauge"
+
+        def __init__(self, name: str, documentation: str, labelnames: Optional[Iterable[str]] = None):
+            super().__init__(name, documentation, labelnames)
+            self._values: Dict[Tuple[str, ...], float] = {}
+
+        def _new_child(self, label_values: Tuple[str, ...]) -> GaugeChild:
+            return GaugeChild(self, label_values)
+
+        def set(self, value: float) -> None:
+            self.labels().set(value)
+
+        def inc(self, amount: float = 1.0) -> None:
+            self.labels().inc(amount)
+
+        def dec(self, amount: float = 1.0) -> None:
+            self.labels().dec(amount)
 
         def collect(self) -> List[str]:
             lines: List[str] = []
@@ -178,6 +220,7 @@ except Exception:  # pragma: no cover - fallback for minimal environments
 __all__ = [
     "CONTENT_TYPE_LATEST",
     "Counter",
+    "Gauge",
     "Histogram",
     "Info",
     "generate_latest",
