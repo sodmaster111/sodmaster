@@ -2,5 +2,6 @@ services:
   - type: web
     name: sodmaster-c-unit
     env: python
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: ./start_web.sh
     healthCheckPath: /healthz
