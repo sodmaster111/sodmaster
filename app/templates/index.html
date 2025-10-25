@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sodmaster Subscriptions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem auto;
+            max-width: 640px;
+            line-height: 1.5;
+        }
+        form {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #ccc;
+            border-radius: 0.75rem;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            font-weight: 600;
+        }
+        input, select, button {
+            margin-top: 0.5rem;
+            padding: 0.65rem;
+            font-size: 1rem;
+        }
+        button {
+            cursor: pointer;
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+        }
+        .message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .message.success {
+            background-color: #e6f4ea;
+            color: #0f9d58;
+            border: 1px solid #0f9d58;
+        }
+        .message.error {
+            background-color: #fce8e6;
+            color: #d93025;
+            border: 1px solid #d93025;
+        }
+    </style>
+</head>
+<body>
+    <h1>Subscribe to Sodmaster</h1>
+    <p>Choose your plan, pay with crypto, and submit your transaction hash to activate your subscription.</p>
+
+    <form id="subscription-form">
+        <label>
+            Email
+            <input type="email" name="email" required />
+        </label>
+        <label>
+            Plan
+            <select name="plan" required>
+                <option value="starter">Starter — $100</option>
+                <option value="pro">Pro — $250</option>
+                <option value="alpha">Alpha — $500</option>
+            </select>
+        </label>
+        <label>
+            Cryptocurrency
+            <select name="crypto" required>
+                <option value="btc">Bitcoin (BTC)</option>
+                <option value="eth">Ethereum (ETH)</option>
+                <option value="ton">TON</option>
+            </select>
+        </label>
+        <label>
+            Transaction hash
+            <input type="text" name="tx_hash" minlength="10" required />
+        </label>
+        <button type="submit">Submit subscription</button>
+    </form>
+
+    <div id="form-message" class="message"></div>
+
+    <script>
+        const form = document.getElementById("subscription-form");
+        const messageBox = document.getElementById("form-message");
+
+        function showMessage(text, type = "success") {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = "block";
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            messageBox.style.display = "none";
+
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch("/api/v1/subscribe", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const detail = errorData.detail || "Subscription failed. Please check your transaction hash.";
+                    showMessage(detail, "error");
+                    return;
+                }
+
+                const data = await response.json();
+                showMessage(`Subscription created successfully! ID: ${data.id}`, "success");
+                form.reset();
+            } catch (error) {
+                console.error("Subscription error", error);
+                showMessage("Network error. Please try again later.", "error");
+            }
+        });
+    </script>
+</body>
+</html>

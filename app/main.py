@@ -13,6 +13,7 @@ from app.auth.google_oauth import router as google_auth_router
 from app.auth.telegram_login import router as telegram_auth_router
 from app.audit.service import CUnit, bootstrap_default_audit_trail
 from app.api.v1.health import router as health_router
+from app.api.v1.payments import router as payments_router
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
@@ -157,6 +158,7 @@ app.include_router(treasury_router)
 app.include_router(google_auth_router)
 app.include_router(telegram_auth_router)
 app.include_router(users_router)
+app.include_router(payments_router)
 
 
 @app.middleware("http")
