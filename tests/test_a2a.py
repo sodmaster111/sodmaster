@@ -87,15 +87,23 @@ def test_job_executes_in_background(client, caplog):
     response = client.post("/a2a/command", json=payload)
     job_id = response.json()["job_id"]
 
-    for _ in range(5):
+    observed_statuses: list[str] = [response.json()["status"]]
+
+    time.sleep(0.01)
+
+    for _ in range(20):
         status_response = client.get(f"/a2a/jobs/{job_id}")
         body = status_response.json()
+        observed_statuses.append(body["status"])
         if body["status"] == "done":
             assert body["result"] == {"status": "pong", "echo": {"value": 42}}
             break
-        time.sleep(0.1)
+        time.sleep(0.05)
     else:
         pytest.fail("A2A job did not complete in time")
+
+    assert observed_statuses[0] == "accepted"
+    assert "done" in observed_statuses
 
     assert any(
         getattr(record, "event", None) == "a2a_start" and getattr(record, "job_id", None) == job_id
@@ -119,15 +127,23 @@ def test_job_failure_is_reported(client, caplog):
     response = client.post("/a2a/command", json=payload)
     job_id = response.json()["job_id"]
 
-    for _ in range(5):
+    observed_statuses: list[str] = [response.json()["status"]]
+
+    time.sleep(0.01)
+
+    for _ in range(20):
         status_response = client.get(f"/a2a/jobs/{job_id}")
         body = status_response.json()
+        observed_statuses.append(body["status"])
         if body["status"] == "failed":
             assert "Unsupported A2A command" in body["result"]["reason"]
             break
-        time.sleep(0.1)
+        time.sleep(0.05)
     else:
         pytest.fail("A2A job did not fail in time")
+
+    assert observed_statuses[0] == "accepted"
+    assert "failed" in observed_statuses
 
     assert any(
         getattr(record, "event", None) == "a2a_start" and getattr(record, "job_id", None) == job_id
