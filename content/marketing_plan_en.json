@@ -1,0 +1,146 @@
+[
+  {
+    "week": 1,
+    "goals": {"followers": 500, "traffic": 1200, "conversion": 0.03},
+    "core_messages": [
+      "Launch autonomous marketing operations",
+      "Activate full-funnel automation",
+      "Share transparent growth metrics"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram", "YouTube"],
+    "call_to_action": ["subscribe", "share"],
+    "audience": "founders & growth leads"
+  },
+  {
+    "week": 2,
+    "goals": {"followers": 650, "traffic": 1500, "conversion": 0.031},
+    "core_messages": [
+      "Showcase orchestrated social cadence",
+      "Highlight A/B testing insights",
+      "Demonstrate collaborative AI workflows"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "YouTube"],
+    "call_to_action": ["subscribe", "comment"],
+    "audience": "growth marketers"
+  },
+  {
+    "week": 3,
+    "goals": {"followers": 800, "traffic": 1800, "conversion": 0.032},
+    "core_messages": [
+      "Position AnalystAI as real-time operator",
+      "Publish conversion uplift playbook",
+      "Celebrate community wins"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram"],
+    "call_to_action": ["share", "contribute"],
+    "audience": "product marketing managers"
+  },
+  {
+    "week": 4,
+    "goals": {"followers": 950, "traffic": 2100, "conversion": 0.033},
+    "core_messages": [
+      "Unlock repeatable demand programs",
+      "Show marketing ops observability",
+      "Announce template marketplace"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "YouTube"],
+    "call_to_action": ["subscribe", "share"],
+    "audience": "demand generation leads"
+  },
+  {
+    "week": 5,
+    "goals": {"followers": 1100, "traffic": 2400, "conversion": 0.034},
+    "core_messages": [
+      "Introduce creative automation loops",
+      "Reveal CTR benchmark dashboard",
+      "Promote webinar on autonomous funnels"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram", "YouTube"],
+    "call_to_action": ["register", "share"],
+    "audience": "marketing automation leaders"
+  },
+  {
+    "week": 6,
+    "goals": {"followers": 1250, "traffic": 2700, "conversion": 0.035},
+    "core_messages": [
+      "Highlight cross-channel scheduling",
+      "Publish success stories",
+      "Deliver data-backed insights"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram"],
+    "call_to_action": ["subscribe", "contribute"],
+    "audience": "growth hackers"
+  },
+  {
+    "week": 7,
+    "goals": {"followers": 1400, "traffic": 3000, "conversion": 0.036},
+    "core_messages": [
+      "Activate referral flywheels",
+      "Detail AI-assisted copy experiments",
+      "Share roadmap milestones"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "YouTube"],
+    "call_to_action": ["share", "subscribe"],
+    "audience": "marketing teams"
+  },
+  {
+    "week": 8,
+    "goals": {"followers": 1550, "traffic": 3300, "conversion": 0.037},
+    "core_messages": [
+      "Introduce community-generated assets",
+      "Show attribution clarity",
+      "Open partner collaborations"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram"],
+    "call_to_action": ["contribute", "share"],
+    "audience": "partner marketers"
+  },
+  {
+    "week": 9,
+    "goals": {"followers": 1700, "traffic": 3600, "conversion": 0.038},
+    "core_messages": [
+      "Reveal retention insights",
+      "Launch advanced analytics pack",
+      "Spotlight user generated content"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "YouTube"],
+    "call_to_action": ["subscribe", "comment"],
+    "audience": "analytics leaders"
+  },
+  {
+    "week": 10,
+    "goals": {"followers": 1850, "traffic": 3900, "conversion": 0.039},
+    "core_messages": [
+      "Scale global campaign ops",
+      "Deliver localization toolkit",
+      "Announce integration ecosystem"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram", "YouTube"],
+    "call_to_action": ["subscribe", "share"],
+    "audience": "global marketing leads"
+  },
+  {
+    "week": 11,
+    "goals": {"followers": 2000, "traffic": 4200, "conversion": 0.04},
+    "core_messages": [
+      "Automate lead-to-revenue handoff",
+      "Share conversion milestone",
+      "Host customer stories"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "YouTube"],
+    "call_to_action": ["register", "subscribe"],
+    "audience": "revenue operations"
+  },
+  {
+    "week": 12,
+    "goals": {"followers": 2200, "traffic": 4500, "conversion": 0.041},
+    "core_messages": [
+      "Review quarter impact",
+      "Publish next-stage roadmap",
+      "Invite co-marketing experiments"
+    ],
+    "target_channels": ["Twitter", "LinkedIn", "Telegram", "YouTube"],
+    "call_to_action": ["contribute", "share"],
+    "audience": "strategic partners"
+  }
+]

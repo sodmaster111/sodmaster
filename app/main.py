@@ -13,6 +13,7 @@ from app.audit.service import CUnit, bootstrap_default_audit_trail
 from app.cgo.routes import router as cgo_router
 from app.infra import InMemoryJobStore, RedisJobStore, get_job_store
 from app.metrics import APP_INFO, record_http_request
+from app.marketing import router as marketing_router
 from app.mktg.routes import router as mktg_router
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.payments import PaymentRouter
@@ -139,6 +140,7 @@ app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
 app.include_router(webdev_router, prefix="/api/v1/webdev")
 app.include_router(mktg_router, prefix="/api/v1/mktg")
+app.include_router(marketing_router)
 app.include_router(miniapp_router)
 app.include_router(subscription_router)
 app.include_router(fundraise_router, prefix="/api/v1/fundraise")
