@@ -3,8 +3,11 @@ services:
   - type: web
     name: sodmaster-c-unit
     env: python
+    plan: free
+    region: oregon
     buildCommand: pip install -r requirements.txt
-    startCommand: ./bin/start_web.sh
+    startCommand: ./start_web.sh
+    healthCheckPath: /healthz
     autoDeploy: true
     envVars:
       - key: OPENROUTER_API_KEY
