@@ -171,6 +171,11 @@ async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
 @app.middleware("http")
 async def observe_requests(request: Request, call_next):
     response = await call_next(request)
