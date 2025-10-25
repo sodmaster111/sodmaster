@@ -18,11 +18,19 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Verify site SEO build
+        run: node tests/site_seo_build.mjs
 
       - name: Run tests
         run: pytest
