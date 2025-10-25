@@ -104,3 +104,27 @@ jobs:
                 ref,
               });
             }
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend deps
+        working-directory: app/site
+        run: |
+          npm ci || npm install
+
+      - name: Build site
+        working-directory: app/site
+        run: npm run build || npx astro build
+
+      - name: Run Lighthouse on static build
+        run: |
+          npx -y @lhci/cli autorun --upload.target=filesystem --collect.staticDistDir=app/site/dist || true
