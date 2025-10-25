@@ -15,6 +15,7 @@ from app.metrics import APP_INFO, record_http_request
 from app.mktg.routes import router as mktg_router
 from app.prometheus import CONTENT_TYPE_LATEST, generate_latest
 from app.ops.routes import router as ops_router
+from app.miniapp.routes import router as miniapp_router
 from app.webdev.routes import router as webdev_router
 from app.root.routes import router as root_router
 from app.security.waf import WordPressScannerShieldMiddleware
@@ -105,6 +106,7 @@ app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
 app.include_router(webdev_router, prefix="/api/v1/webdev")
 app.include_router(mktg_router, prefix="/api/v1/mktg")
+app.include_router(miniapp_router)
 
 
 @app.middleware("http")

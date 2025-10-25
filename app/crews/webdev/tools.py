@@ -60,12 +60,15 @@ class RepoWriterTool:
     def write_json(self, relative_path: str, payload: Dict[str, Any]) -> Path:
         """Write structured data under ``src/data`` preserving indentation."""
 
-        target = ensure_page_path(
-            self.data_root, relative_path, expected_extension=".json"
-        )
-        target.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        logger.info("WebdevRepoWriter | wrote data", extra={"path": str(target)})
-        return target
+        candidate = (self.data_root / relative_path).resolve()
+        data_root = self.data_root.resolve()
+        if not str(candidate).startswith(str(data_root)):
+            raise ValueError("Data path must stay within the src/data directory")
+
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        candidate.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        logger.info("WebdevRepoWriter | wrote data", extra={"path": str(candidate)})
+        return candidate
 
 
 class SiteBuildTool:

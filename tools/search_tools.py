@@ -10,12 +10,14 @@ try:  # pragma: no cover - exercised in integration flows
 except Exception:  # pragma: no cover - defensive guard for optional dependency
     ct = None
     logger.warning("crew_ai_tools_unavailable")
-if ct is not None:
+if ct is not None and all(hasattr(ct, attr) for attr in ["BaseTool", "ScrapeWebsiteTool", "SerperDevTool"]):
     BaseTool = ct.BaseTool
     ScrapeWebsiteTool = ct.ScrapeWebsiteTool
     SerperDevTool = ct.SerperDevTool
     CREW_TOOLS_AVAILABLE = True
 else:
+    if ct is not None:
+        logger.warning("crew_ai_tools_incomplete")
 
     class BaseTool:  # type: ignore[override] - stub to satisfy typing/runtime usage
         """Minimal stub replicating CrewAI BaseTool behaviour."""
@@ -61,7 +63,12 @@ else:
     CREW_TOOLS_AVAILABLE = False
 
 # Инициализируем Exa (Exa — это наша стратегическая замена Google)
-exa = Exa(api_key=os.environ.get("EXA_API_KEY"))
+_exa_api_key = os.environ.get("EXA_API_KEY")
+if _exa_api_key:
+    exa = Exa(api_key=_exa_api_key)
+else:
+    exa = None
+    logger.warning("exa_api_key_missing")
 
 # Создаем ExaSearchTool
 class ExaSearchTool(BaseTool):
@@ -69,6 +76,8 @@ class ExaSearchTool(BaseTool):
     description: str = "Продвинутый ИИ-поиск. Используй для глубокого анализа, поиска трендов и ответов на сложные вопросы."
     
     def _run(self, query: str) -> str:
+        if exa is None:
+            return "Exa API key is not configured"
         try:
             response = exa.search_and_contents(query, type="magic", num_results=5)
             return str(response)

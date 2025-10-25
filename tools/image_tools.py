@@ -9,10 +9,12 @@ try:  # pragma: no cover - exercised indirectly via integration tests
 except Exception:  # pragma: no cover - optional dependency guard
     ct = None
     logger.warning("crew_ai_tools_unavailable")
-if ct is not None:
+if ct is not None and hasattr(ct, "BaseTool"):
     BaseTool = ct.BaseTool
     CREW_TOOLS_AVAILABLE = True
 else:
+    if ct is not None:
+        logger.warning("crew_ai_tools_incomplete")
 
     class BaseTool:  # type: ignore[override] - minimal stub
         name: str = "crew_ai_stub_base_tool"
@@ -29,9 +31,27 @@ else:
 
     CREW_TOOLS_AVAILABLE = False
 
-from leonardo_ai_sdk import LeonardoAiSDK
+try:  # pragma: no cover - optional dependency guard
+    from leonardo_ai_sdk import LeonardoAiSDK
+except Exception:  # pragma: no cover - optional dependency guard
+    LeonardoAiSDK = None  # type: ignore[assignment]
+    logger.warning("leonardo_sdk_unavailable")
 
-SDK = LeonardoAiSDK(api_key=os.environ.get("LEONARDO_API_KEY", ""))
+if LeonardoAiSDK is not None:
+    api_key = os.environ.get("LEONARDO_API_KEY")
+    if api_key:
+        try:
+            SDK = LeonardoAiSDK(api_key=api_key)  # type: ignore[call-arg]
+        except TypeError:
+            try:
+                SDK = LeonardoAiSDK(auth_token=api_key)  # type: ignore[call-arg]
+            except Exception:  # pragma: no cover - last resort
+                SDK = None
+                logger.warning("leonardo_sdk_signature_changed")
+    else:
+        SDK = None
+else:
+    SDK = None
 
 
 class LeonardoImageTool(BaseTool):
@@ -41,7 +61,7 @@ class LeonardoImageTool(BaseTool):
 
     def _get_client(self) -> Optional[LeonardoAiSDK]:
         api_key = os.environ.get("LEONARDO_API_KEY", "")
-        if not api_key:
+        if not api_key or LeonardoAiSDK is None:
             return None
 
         if self._cached_client and getattr(self._cached_client, "api_key", None) == api_key:
@@ -51,7 +71,17 @@ class LeonardoImageTool(BaseTool):
             self._cached_client = SDK
             return self._cached_client
 
-        self._cached_client = LeonardoAiSDK(api_key=api_key)
+        try:
+            self._cached_client = LeonardoAiSDK(api_key=api_key)  # type: ignore[call-arg]
+        except TypeError:
+            try:
+                self._cached_client = LeonardoAiSDK(auth_token=api_key)  # type: ignore[call-arg]
+            except Exception:  # pragma: no cover - best effort fallback
+                logger.warning("leonardo_sdk_signature_changed")
+                self._cached_client = None
+        except Exception:  # pragma: no cover - best effort fallback
+            logger.warning("leonardo_sdk_initialization_failed")
+            self._cached_client = None
         return self._cached_client
 
     def _call_generation(self, client: LeonardoAiSDK, prompt: str) -> Any:
