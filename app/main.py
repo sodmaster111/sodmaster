@@ -31,7 +31,7 @@ from app.security.rate_limit import RateLimiter
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
 from app.subscription import router as subscription_router
-from app.treasury import router as treasury_router
+from app.api.v1.treasury import router as treasury_router
 from app.subscription.repository import SubscriptionRepository
 from app.version_info import load_version
 from app.fundraise.service import FundraiseTracker

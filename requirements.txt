@@ -15,3 +15,9 @@ exa_py           # SDK для Exa (продвинутый поиск для CGO/
 pydantic
 prometheus_client
 pytest-asyncio
+web3==6.11.3
+ccxt==4.1.95
+python-dotenv==1.0.0
+cryptography==41.0.7
+bitcoinlib==0.6.15
+requests==2.31.0
