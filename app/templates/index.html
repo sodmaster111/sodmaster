@@ -1,169 +1,455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sodmaster - World's First Autonomous AI Corporation</title>
-  <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-  <section class="hero">
-    <div class="hero-content">
-      <div class="logo">🤖</div>
-      <h1>Sodmaster</h1>
-      <p class="subtitle">World's First Autonomous AI Corporation</p>
-      <p class="tagline">Powered by AI agents. Managed by AI. Built for the future.</p>
-      
-      <div class="features">
-        <div class="feature">
-          <div class="feature-icon">🧠</div>
-          <h3>AI-Powered</h3>
-          <p>Fully autonomous AI agents managing all operations</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🔗</div>
-          <h3>Web3 Native</h3>
-          <p>Built on blockchain with crypto payments</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🚀</div>
-          <h3>Revolutionary</h3>
-          <p>First autonomous corporate structure</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="pricing">
-    <h2>Choose Your Plan</h2>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">$100</div>
-        <p class="plan-description">Basic AI services access</p>
-        <button class="subscribe-btn" onclick="openModal('starter')">Subscribe</button>
-      </div>
-      
-      <div class="price-card featured">
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">$250</div>
-        <p class="plan-description">Advanced AI capabilities</p>
-        <button class="subscribe-btn" onclick="openModal('pro')">Subscribe</button>
-      </div>
-      
-      <div class="price-card">
-        <div class="plan-name">Alpha</div>
-        <div class="plan-price">$500</div>
-        <p class="plan-description">Full access + priority support</p>
-        <button class="subscribe-btn" onclick="openModal('alpha')">Subscribe</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="wallets">
-    <h2>Crypto Wallets</h2>
-    <div class="wallet-list">
-      <div class="wallet-item">
-        <div class="wallet-label">BTC</div>
-        <div class="wallet-address">bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz</div>
-        <button class="copy-btn" onclick="copyWallet('btc', 'bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz')">Copy</button>
-      </div>
-      <div class="wallet-item">
-        <div class="wallet-label">ETH</div>
-        <div class="wallet-address">0x145add48062C43cd93a725F84817Cb503B4CA108</div>
-        <button class="copy-btn" onclick="copyWallet('eth', '0x145add48062C43cd93a725F84817Cb503B4CA108')">Copy</button>
-      </div>
-      <div class="wallet-item">
-        <div class="wallet-label">TON</div>
-        <div class="wallet-address">UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my</div>
-        <button class="copy-btn" onclick="copyWallet('ton', 'UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my')">Copy</button>
-      </div>
-    </div>
-  </section>
-
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeModal()">×</button>
-      <h3>Subscribe Now</h3>
-      <form id="subscribe-form" onsubmit="submitSubscription(event)">
-        <input type="hidden" id="plan-input" name="plan">
-        
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="your@email.com" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Crypto Currency</label>
-          <select id="crypto" required>
-            <option value="btc">Bitcoin (BTC)</option>
-            <option value="eth">Ethereum (ETH)</option>
-            <option value="ton">TON</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Transaction Hash</label>
-          <input type="text" id="tx_hash" placeholder="Paste your transaction hash" required>
-        </div>
-        
-        <button type="submit" class="submit-btn">Complete Subscription</button>
-      </form>
-    </div>
-  </div>
-
+  <meta name="description" content="50+ specialized AI agents working 24/7 across all departments">
+  
+  <!-- SEO -->
+  <meta property="og:title" content="Sodmaster - Autonomous AI Corporation">
+  <meta property="og:description" content="50+ AI agents, 99.9% uptime, fully autonomous">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sodmaster.online">
+  <link rel="canonical" href="https://sodmaster.online">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #667eea, #00D9FF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+  
   <script>
-    function openModal(plan) {
-      document.getElementById('modal').classList.add('active');
-      document.getElementById('plan-input').value = plan;
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-    }
-
-    function copyWallet(crypto, address) {
-      navigator.clipboard.writeText(address);
-      alert(`✅ ${crypto.toUpperCase()} address copied to clipboard!`);
-    }
-
-    async function submitSubscription(e) {
-      e.preventDefault();
-      
-      const formData = {
-        email: document.getElementById('email').value,
-        plan: document.getElementById('plan-input').value,
-        crypto: document.getElementById('crypto').value,
-        tx_hash: document.getElementById('tx_hash').value
-      };
-
-      try {
-        const response = await fetch('/api/v1/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          alert('✅ Subscription created successfully! Check your email.');
-          closeModal();
-          document.getElementById('subscribe-form').reset();
-        } else {
-          const error = await response.json();
-          alert('❌ Error: ' + (error.detail || 'Failed to create subscription'));
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-dark': '#0A0E27',
+            'brand-purple': '#667eea',
+            'brand-blue': '#00D9FF',
+          }
         }
-      } catch (error) {
-        alert('❌ Network error. Please try again.');
       }
     }
-
-    // Close modal on outside click
-    document.getElementById('modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeModal();
-      }
-    });
   </script>
+</head>
+
+<body class="bg-gray-900 text-white antialiased">
+
+  <!-- Navigation -->
+  <nav class="fixed w-full top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold">Sodmaster</span>
+        </a>
+        
+        <!-- Menu -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="/" class="hover:text-brand-blue transition-colors">Home</a>
+          <a href="/leadership" class="hover:text-brand-blue transition-colors">Leadership</a>
+          <a href="#technology" class="hover:text-brand-blue transition-colors">Technology</a>
+          <a href="#pricing" class="hover:text-brand-blue transition-colors">Pricing</a>
+          <a href="/admin" class="text-sm text-gray-400 hover:text-white transition-colors">Admin</a>
+        </div>
+        
+        <!-- CTA -->
+        <a href="#pricing" class="hidden md:block px-6 py-2.5 bg-gradient-to-r from-brand-purple to-brand-blue rounded-full font-semibold text-sm hover:scale-105 transition-transform shadow-lg shadow-brand-purple/30">
+          Get Started
+        </a>
+        
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative pt-32 pb-20 overflow-hidden min-h-screen flex items-center">
+    <!-- Background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10"></div>
+    <div class="absolute inset-0" style="background-image: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.1) 0%, transparent 50%);"></div>
+    
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="text-center max-w-5xl mx-auto">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 mb-8 animate-fade-in">
+          <svg class="w-4 h-4 text-brand-blue" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          <span class="text-sm font-medium">World's First Autonomous AI Corporation</span>
+        </div>
+        
+        <!-- Headline -->
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-tight mb-8 animate-fade-in-up">
+          Building the Future of
+          <br><span class="gradient-text">Autonomous Business</span>
+        </h1>
+        
+        <!-- Subheadline -->
+        <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+          50+ specialized AI agents working 24/7 across all departments—from engineering to finance to marketing. <strong class="text-white">Zero human intervention required.</strong>
+        </p>
+        
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <a href="/leadership" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-purple to-brand-blue rounded-full font-semibold text-lg hover:scale-105 transition-transform shadow-2xl shadow-brand-purple/40">
+            Meet Our AI Team
+          </a>
+          <a href="#pricing" class="w-full sm:w-auto px-8 py-4 bg-white/5 backdrop-blur-sm rounded-full font-semibold text-lg hover:bg-white/10 transition-colors border border-white/10">
+            View Pricing
+          </a>
+        </div>
+        
+        <!-- Trust Indicators -->
+        <div class="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>99.9% Uptime</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>Enterprise Security</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+            </svg>
+            <span>50+ AI Agents</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="py-20 border-y border-white/5 bg-gray-900/50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="text-center">
+          <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600 mb-3">50+</div>
+          <div class="text-gray-400 font-medium">AI Agents Active</div>
+        </div>
+        <div class="text-center">
+          <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 mb-3">99.9%</div>
+          <div class="text-gray-400 font-medium">System Uptime</div>
+        </div>
+        <div class="text-center">
+          <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600 mb-3">24/7</div>
+          <div class="text-gray-400 font-medium">Autonomous Operations</div>
+        </div>
+        <div class="text-center">
+          <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 mb-3">3</div>
+          <div class="text-gray-400 font-medium">Blockchain Networks</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="technology" class="py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-20">
+        <h2 class="text-4xl md:text-5xl lg:text-6xl font-black mb-6">
+          Autonomous Intelligence
+          <span class="gradient-text">at Scale</span>
+        </h2>
+        <p class="text-xl text-gray-400">
+          Every department powered by specialized AI agents with deep expertise
+        </p>
+      </div>
+
+      <!-- Features Grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-purple/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Multi-Agent Architecture</h3>
+          <p class="text-gray-400 leading-relaxed">CrewAI-powered coordination between specialized agents with hierarchical task delegation and autonomous decision-making</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-blue/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Enterprise Security</h3>
+          <p class="text-gray-400 leading-relaxed">CISO-AI manages 24/7 threat detection, compliance monitoring, and data protection with zero human oversight</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-purple/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Multi-Chain Treasury</h3>
+          <p class="text-gray-400 leading-relaxed">CFO-AI manages BTC, ETH, and TON wallets with automated risk management and real-time portfolio optimization</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-blue/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Continuous Development</h3>
+          <p class="text-gray-400 leading-relaxed">CTO-AI orchestrates DevOps, Backend, and Frontend units for rapid iteration and deployment</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-purple/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Growth Automation</h3>
+          <p class="text-gray-400 leading-relaxed">CMO-AI drives SEO, content creation, and social media engagement with data-driven strategies</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-brand-blue/50 hover:bg-white/10 transition-all duration-300 group">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-7 h-7 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Operational Excellence</h3>
+          <p class="text-gray-400 leading-relaxed">COO-AI optimizes workflows, manages customer success, and ensures 24/7 quality operations</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="py-32 bg-gradient-to-b from-transparent to-gray-900/50">
+    <div class="max-w-7xl mx-auto px-6">
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-20">
+        <h2 class="text-4xl md:text-5xl font-black mb-6">
+          Choose Your <span class="gradient-text">Plan</span>
+        </h2>
+        <p class="text-xl text-gray-400">
+          Flexible pricing for startups to enterprises
+        </p>
+      </div>
+
+      <!-- Pricing Cards -->
+      <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <!-- Starter -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 hover:border-purple-500/30 transition-all">
+          <h3 class="text-2xl font-bold mb-4">Starter</h3>
+          <div class="mb-6">
+            <span class="text-5xl font-black">$100</span>
+            <span class="text-gray-400">/month</span>
+          </div>
+          <p class="text-gray-400 mb-8">Perfect for individuals and small teams</p>
+          <ul class="space-y-4 mb-8">
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Basic AI services access</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">1,000 API calls/month</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Email support</span>
+            </li>
+          </ul>
+          <a href="/api/v1/wallets" class="block w-full py-3 text-center bg-white/10 hover:bg-white/20 rounded-xl font-semibold transition-colors border border-white/10">
+            Subscribe
+          </a>
+        </div>
+
+        <!-- Pro (Featured) -->
+        <div class="p-8 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-3xl border-2 border-purple-500/50 hover:border-purple-500 transition-all transform scale-105">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold">Pro</h3>
+            <span class="px-3 py-1 bg-purple-500 rounded-full text-xs font-bold uppercase">Popular</span>
+          </div>
+          <div class="mb-6">
+            <span class="text-5xl font-black">$250</span>
+            <span class="text-gray-400">/month</span>
+          </div>
+          <p class="text-gray-400 mb-8">For growing businesses and teams</p>
+          <ul class="space-y-4 mb-8">
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Advanced AI capabilities</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">10,000 API calls/month</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Priority support</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Custom integrations</span>
+            </li>
+          </ul>
+          <a href="/api/v1/wallets" class="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/30">
+            Subscribe
+          </a>
+        </div>
+
+        <!-- Alpha -->
+        <div class="p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 hover:border-blue-500/30 transition-all">
+          <h3 class="text-2xl font-bold mb-4">Alpha</h3>
+          <div class="mb-6">
+            <span class="text-5xl font-black">$500</span>
+            <span class="text-gray-400">/month</span>
+          </div>
+          <p class="text-gray-400 mb-8">Enterprise-grade solution</p>
+          <ul class="space-y-4 mb-8">
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Full AI access</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Unlimited API calls</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">Dedicated support</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-300">White-label option</span>
+            </li>
+          </ul>
+          <a href="/api/v1/wallets" class="block w-full py-3 text-center bg-white/10 hover:bg-white/20 rounded-xl font-semibold transition-colors border border-white/10">
+            Subscribe
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-32 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-blue-900/20"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <h2 class="text-4xl md:text-5xl font-black mb-6">
+        Ready to Join the <span class="gradient-text">AI Revolution</span>?
+      </h2>
+      <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+        Be part of the first fully autonomous AI corporation. Start your subscription today.
+      </p>
+      <a href="#pricing" class="inline-block px-10 py-5 bg-white text-gray-900 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-2xl hover:shadow-white/20">
+        Get Started Now
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 bg-gray-950/50 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+        <!-- Logo & Description -->
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <span class="text-xl font-bold">Sodmaster</span>
+          </div>
+          <p class="text-gray-400 text-sm max-w-md">
+            World's first autonomous AI corporation. Powered by 50+ specialized AI agents working 24/7 across all departments.
+          </p>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <h4 class="font-semibold mb-4">Company</h4>
+          <ul class="space-y-3 text-sm text-gray-400">
+            <li><a href="/leadership" class="hover:text-white transition-colors">Leadership</a></li>
+            <li><a href="#technology" class="hover:text-white transition-colors">Technology</a></li>
+            <li><a href="/admin" class="hover:text-white transition-colors">Admin</a></li>
+          </ul>
+        </div>
+
+        <!-- Product -->
+        <div>
+          <h4 class="font-semibold mb-4">Product</h4>
+          <ul class="space-y-3 text-sm text-gray-400">
+            <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+            <li><a href="/api/v1/health" class="hover:text-white transition-colors">API Status</a></li>
+            <li><a href="/api/v1/wallets" class="hover:text-white transition-colors">Wallets</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+        <p>© 2025 Sodmaster AI Corporation. All rights reserved.</p>
+        <div class="flex items-center gap-6">
+          <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
+          <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
