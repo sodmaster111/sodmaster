@@ -1,23 +1,19 @@
-fastapi
-jinja2
-uvicorn[standard]
-redis>=5
-semantic-kernel
-crewai>=0.51
-langchain-openai
-web3
-tenacity>=8
-httpx
-crewai-tools>=1.2.0     # Пакет для стандартных инструментов (поиск, браузер, файлы)
-leonardo-ai-sdk>=6.5.0   # SDK для нашего CGO-AI (генерация изображений)
-pytest
-exa_py           # SDK для Exa (продвинутый поиск для CGO/CTO)
-pydantic
-prometheus_client
-pytest-asyncio
-web3==6.11.3
-ccxt==4.1.95
-python-dotenv==1.0.0
-cryptography==41.0.7
-bitcoinlib==0.6.15
+fastapi>=0.115.0
+jinja2>=3.1.4
+uvicorn[standard]>=0.32.0
+redis>=5.0.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+httpx>=0.27.0
+aiohttp>=3.9.0
 requests>=2.32.5
+
+# AI/ML Libraries
+semantic-kernel>=1.0.0
+crewai>=0.80.0
+crewai-tools>=1.2.0
+
+# Crypto Libraries (базовые, работают стабильно)
+web3>=6.11.3
+ccxt>=4.1.95
+cryptography>=41.0.7
