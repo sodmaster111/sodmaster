@@ -1,9 +1,0 @@
-{
-  "cycle": 1,
-  "objective": "Bootstrap C-Unit (CEO + 11)",
-  "key_results": [
-    "FastAPI health on Render",
-    "CrewAI skeleton committed",
-    "Content plan draft prepared"
-  ]
-}
