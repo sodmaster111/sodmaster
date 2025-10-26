@@ -1,169 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sodmaster - World's First Autonomous AI Corporation</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sodmaster Subscriptions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem auto;
+            max-width: 640px;
+            line-height: 1.5;
+        }
+        form {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #ccc;
+            border-radius: 0.75rem;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            font-weight: 600;
+        }
+        input, select, button {
+            margin-top: 0.5rem;
+            padding: 0.65rem;
+            font-size: 1rem;
+        }
+        button {
+            cursor: pointer;
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+        }
+        .message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .message.success {
+            background-color: #e6f4ea;
+            color: #0f9d58;
+            border: 1px solid #0f9d58;
+        }
+        .message.error {
+            background-color: #fce8e6;
+            color: #d93025;
+            border: 1px solid #d93025;
+        }
+    </style>
 </head>
 <body>
-  <section class="hero">
-    <div class="hero-content">
-      <div class="logo">🤖</div>
-      <h1>Sodmaster</h1>
-      <p class="subtitle">World's First Autonomous AI Corporation</p>
-      <p class="tagline">Powered by AI agents. Managed by AI. Built for the future.</p>
-      
-      <div class="features">
-        <div class="feature">
-          <div class="feature-icon">🧠</div>
-          <h3>AI-Powered</h3>
-          <p>Fully autonomous AI agents managing all operations</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🔗</div>
-          <h3>Web3 Native</h3>
-          <p>Built on blockchain with crypto payments</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🚀</div>
-          <h3>Revolutionary</h3>
-          <p>First autonomous corporate structure</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    <h1>Subscribe to Sodmaster</h1>
+    <p>Choose your plan, pay with crypto, and submit your transaction hash to activate your subscription.</p>
 
-  <section class="pricing">
-    <h2>Choose Your Plan</h2>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">$100</div>
-        <p class="plan-description">Basic AI services access</p>
-        <button class="subscribe-btn" onclick="openModal('starter')">Subscribe</button>
-      </div>
-      
-      <div class="price-card featured">
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">$250</div>
-        <p class="plan-description">Advanced AI capabilities</p>
-        <button class="subscribe-btn" onclick="openModal('pro')">Subscribe</button>
-      </div>
-      
-      <div class="price-card">
-        <div class="plan-name">Alpha</div>
-        <div class="plan-price">$500</div>
-        <p class="plan-description">Full access + priority support</p>
-        <button class="subscribe-btn" onclick="openModal('alpha')">Subscribe</button>
-      </div>
-    </div>
-  </section>
+    <form id="subscription-form">
+        <label>
+            Email
+            <input type="email" name="email" required />
+        </label>
+        <label>
+            Plan
+            <select name="plan" required>
+                <option value="starter">Starter — $100</option>
+                <option value="pro">Pro — $250</option>
+                <option value="alpha">Alpha — $500</option>
+            </select>
+        </label>
+        <label>
+            Cryptocurrency
+            <select name="crypto" required>
+                <option value="btc">Bitcoin (BTC)</option>
+                <option value="eth">Ethereum (ETH)</option>
+                <option value="ton">TON</option>
+            </select>
+        </label>
+        <label>
+            Transaction hash
+            <input type="text" name="tx_hash" minlength="10" required />
+        </label>
+        <button type="submit">Submit subscription</button>
+    </form>
 
-  <section class="wallets">
-    <h2>Crypto Wallets</h2>
-    <div class="wallet-list">
-      <div class="wallet-item">
-        <div class="wallet-label">BTC</div>
-        <div class="wallet-address">bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz</div>
-        <button class="copy-btn" onclick="copyWallet('btc', 'bc1q00vwlsur2d33g6w79clw3gmd4wtnx4yvvwt6dz')">Copy</button>
-      </div>
-      <div class="wallet-item">
-        <div class="wallet-label">ETH</div>
-        <div class="wallet-address">0x145add48062C43cd93a725F84817Cb503B4CA108</div>
-        <button class="copy-btn" onclick="copyWallet('eth', '0x145add48062C43cd93a725F84817Cb503B4CA108')">Copy</button>
-      </div>
-      <div class="wallet-item">
-        <div class="wallet-label">TON</div>
-        <div class="wallet-address">UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my</div>
-        <button class="copy-btn" onclick="copyWallet('ton', 'UQC_uDgg1EDFSwK_SfdEnevfPsfKIs1HhTKrPwS8QXYDG8my')">Copy</button>
-      </div>
-    </div>
-  </section>
+    <div id="form-message" class="message"></div>
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeModal()">×</button>
-      <h3>Subscribe Now</h3>
-      <form id="subscribe-form" onsubmit="submitSubscription(event)">
-        <input type="hidden" id="plan-input" name="plan">
-        
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="your@email.com" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Crypto Currency</label>
-          <select id="crypto" required>
-            <option value="btc">Bitcoin (BTC)</option>
-            <option value="eth">Ethereum (ETH)</option>
-            <option value="ton">TON</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Transaction Hash</label>
-          <input type="text" id="tx_hash" placeholder="Paste your transaction hash" required>
-        </div>
-        
-        <button type="submit" class="submit-btn">Complete Subscription</button>
-      </form>
-    </div>
-  </div>
+    <script>
+        const form = document.getElementById("subscription-form");
+        const messageBox = document.getElementById("form-message");
 
-  <script>
-    function openModal(plan) {
-      document.getElementById('modal').classList.add('active');
-      document.getElementById('plan-input').value = plan;
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-    }
-
-    function copyWallet(crypto, address) {
-      navigator.clipboard.writeText(address);
-      alert(`✅ ${crypto.toUpperCase()} address copied to clipboard!`);
-    }
-
-    async function submitSubscription(e) {
-      e.preventDefault();
-      
-      const formData = {
-        email: document.getElementById('email').value,
-        plan: document.getElementById('plan-input').value,
-        crypto: document.getElementById('crypto').value,
-        tx_hash: document.getElementById('tx_hash').value
-      };
-
-      try {
-        const response = await fetch('/api/v1/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          alert('✅ Subscription created successfully! Check your email.');
-          closeModal();
-          document.getElementById('subscribe-form').reset();
-        } else {
-          const error = await response.json();
-          alert('❌ Error: ' + (error.detail || 'Failed to create subscription'));
+        function showMessage(text, type = "success") {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = "block";
         }
-      } catch (error) {
-        alert('❌ Network error. Please try again.');
-      }
-    }
 
-    // Close modal on outside click
-    document.getElementById('modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeModal();
-      }
-    });
-  </script>
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            messageBox.style.display = "none";
+
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch("/api/v1/subscribe", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const detail = errorData.detail || "Subscription failed. Please check your transaction hash.";
+                    showMessage(detail, "error");
+                    return;
+                }
+
+                const data = await response.json();
+                showMessage(`Subscription created successfully! ID: ${data.id}`, "success");
+                form.reset();
+            } catch (error) {
+                console.error("Subscription error", error);
+                showMessage("Network error. Please try again later.", "error");
+            }
+        });
+    </script>
 </body>
 </html>
