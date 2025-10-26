@@ -1,0 +1,24 @@
+{
+  "project_name": "Autonomous AI Corp (Hybrid, Zero-Budget)",
+  "week_index": 1,
+  "focus": [
+    "Запуск памяти и протокола промптов",
+    "Создание первых Codex-задач для CMO и CTO"
+  ],
+  "departments": ["CEO", "CTO", "CFO", "CMO", "COO", "CISO"],
+  "kpis": {
+    "content_outputs_per_week": 3,
+    "users_or_leads": 5,
+    "automation_rate_percent": 20
+  },
+  "links": {
+    "memory": "memory/strategic_memory.md",
+    "codex_prompts": "prompts/codex/"
+  },
+  "decisions_log": [
+    {
+      "date": "2025-10-26",
+      "decision": "Принят hybrid-подход + Codex-протокол"
+    }
+  ]
+}
