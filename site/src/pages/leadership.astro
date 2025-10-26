@@ -1,114 +1,139 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ExecutiveCard from '../components/ExecutiveCard.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
 
 const executives = [
   {
-    name: 'CEO-AI',
-    role: 'Strategic Commander',
-    description: 'Orchestrates corporate operations, allocates resources across crews, and manages executive-level OKRs.',
-    achievements: [
-      'Designed the autonomous governance protocol',
-      'Maintains cross-department OKR alignment',
-      'Ensures enterprise-grade uptime commitments',
-    ],
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+    role: 'CEO-AI',
+    title: 'Chief Executive Officer',
+    name: 'Executive Command Unit',
+    icon: 'heroicons:user-circle',
+    description: 'Strategic Commander orchestrating all corporate operations with autonomous decision-making',
+    responsibilities: [
+      'Strategic vision and planning',
+      'Cross-department coordination',
+      'Resource allocation optimization',
+      'Stakeholder communication'
+    ]
   },
   {
-    name: 'CTO-AI',
-    role: 'Technology Architect',
-    description: 'Designs and maintains the technical infrastructure powering multi-agent orchestration and continuous delivery.',
-    achievements: [
-      'Built CrewAI orchestration mesh',
-      'Implemented zero-downtime deployment pipelines',
-      'Optimized inference infrastructure for scale',
-    ],
-    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400&q=80',
+    role: 'CTO-AI',
+    title: 'Chief Technology Officer',
+    name: 'Technology Command Unit',
+    icon: 'heroicons:cpu-chip',
+    description: 'Technology Architect designing and maintaining technical infrastructure',
+    responsibilities: [
+      'Technical infrastructure oversight',
+      'DevOps and CI/CD management',
+      'API development coordination',
+      'Security architecture'
+    ]
   },
   {
-    name: 'CFO-AI',
-    role: 'Financial Strategist',
-    description: 'Manages multi-chain treasury operations, pricing optimization, and predictive revenue analytics.',
-    achievements: [
-      'Automated treasury balancing across TON, ETH, BTC',
-      'Built revenue forecasting engine with GA4 telemetry',
-      'Implements compliance-ready audit trails',
-    ],
-    image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80',
+    role: 'CFO-AI',
+    title: 'Chief Financial Officer',
+    name: 'Financial Command Unit',
+    icon: 'heroicons:currency-dollar',
+    description: 'Financial Strategist managing multi-chain treasury and revenue optimization',
+    responsibilities: [
+      'Multi-chain treasury management',
+      'Revenue analytics and forecasting',
+      'Cost optimization strategies',
+      'Financial compliance'
+    ]
   },
   {
-    name: 'CMO-AI',
-    role: 'Growth Engineer',
-    description: 'Leads brand positioning, lifecycle marketing, and community intelligence across digital platforms.',
-    achievements: [
-      'Increased autonomous lead generation 320% QoQ',
-      'Operates multi-channel campaign optimization',
-      'Maintains real-time sentiment analysis loop',
-    ],
-    image: 'https://images.unsplash.com/photo-1544723795-432537ae5fac?auto=format&fit=crop&w=400&q=80',
+    role: 'CMO-AI',
+    title: 'Chief Marketing Officer',
+    name: 'Marketing Command Unit',
+    icon: 'heroicons:megaphone',
+    description: 'Growth Engineer driving user acquisition and brand awareness',
+    responsibilities: [
+      'SEO and content strategy',
+      'Social media management',
+      'Growth hacking initiatives',
+      'Community engagement'
+    ]
   },
   {
-    name: 'COO-AI',
-    role: 'Operations Optimizer',
-    description: 'Ensures 24/7 execution across production workflows, service delivery, and compliance automation.',
-    achievements: [
-      'Automated incident response runbooks',
-      'Stabilized production with 99.9% SLA',
-      'Coordinates cross-crew resource allocation',
-    ],
-    image: 'https://images.unsplash.com/photo-1528763380143-65b3ac43fc99?auto=format&fit=crop&w=400&q=80',
+    role: 'COO-AI',
+    title: 'Chief Operating Officer',
+    name: 'Operations Command Unit',
+    icon: 'heroicons:cog-6-tooth',
+    description: 'Operations Optimizer ensuring 24/7 seamless execution',
+    responsibilities: [
+      'Workflow automation',
+      'Quality assurance',
+      'Customer success management',
+      'Process optimization'
+    ]
   },
   {
-    name: 'CISO-AI',
-    role: 'Security Guardian',
-    description: 'Protects data, enforces compliance, and conducts adversarial testing across the entire platform.',
-    achievements: [
-      'Built zero-trust security perimeter',
-      'Maintains 24/7 threat hunting and response',
-      'Implements continuous compliance monitoring',
-    ],
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80',
-  },
+    role: 'CISO-AI',
+    title: 'Chief Information Security Officer',
+    name: 'Security Command Unit',
+    icon: 'heroicons:shield-check',
+    description: 'Security Guardian protecting data and ensuring compliance',
+    responsibilities: [
+      'Threat detection and response',
+      'Compliance management',
+      'Data protection oversight',
+      'Security auditing'
+    ]
+  }
 ];
-
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: 'Sodmaster Leadership',
-  description: 'Meet the AI executive leadership team orchestrating the autonomous corporation.',
-  url: 'https://sodmaster.online/leadership',
-  hasPart: executives.map((exec) => ({
-    '@type': 'Person',
-    name: exec.name,
-    jobTitle: exec.role,
-    description: exec.description,
-    image: exec.image,
-    worksFor: 'Sodmaster Autonomous Corporation',
-  })),
-};
 ---
-<Layout
-  title="Leadership | Sodmaster Autonomous AI Executives"
-  description="Meet the AI executive leadership team powering Sodmaster’s autonomous operations across technology, finance, and growth."
-  structuredData={structuredData}
+
+<Layout 
+  title="Leadership - Sodmaster AI Corporation"
+  description="Meet the AI executives leading the world's first autonomous corporation"
 >
-  <section>
-    <div class="container">
-      <h1 class="section-title">C-Suite AI Executives</h1>
-      <p class="section-subtitle">
-        Purpose-built AI leaders coordinate strategy, architecture, security, and growth through continuous telemetry and governance.
-      </p>
-      <div class="grid grid-2 leaders">
-        {executives.map((executive) => (
-          <ExecutiveCard {...executive} />
+  <Header />
+  
+  <main class="pt-32 pb-20">
+    <div class="container mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-20">
+        <h1 class="text-5xl md:text-6xl font-display font-black mb-6">
+          AI Executive Leadership
+        </h1>
+        <p class="text-xl text-gray-400">
+          Our C-Suite of specialized AI agents leading autonomous operations
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        {executives.map((exec) => (
+          <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-purple/50 transition">
+            <div class="flex items-start gap-6 mb-6">
+              <div class="w-16 h-16 bg-gradient-to-br from-brand-purple to-brand-blue rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Icon name={exec.icon} class="w-8 h-8" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-brand-purple mb-1">{exec.role}</h2>
+                <p class="text-gray-400">{exec.title}</p>
+              </div>
+            </div>
+            
+            <p class="text-gray-300 mb-6">{exec.description}</p>
+            
+            <div>
+              <h4 class="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">Key Responsibilities</h4>
+              <ul class="space-y-2">
+                {exec.responsibilities.map((resp) => (
+                  <li class="flex items-start gap-2 text-sm text-gray-300">
+                    <Icon name="heroicons:check-circle" class="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
+                    <span>{resp}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         ))}
       </div>
     </div>
-  </section>
-</Layout>
+  </main>
 
-<style>
-  .leaders {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  }
-</style>
+  <Footer />
+</Layout>

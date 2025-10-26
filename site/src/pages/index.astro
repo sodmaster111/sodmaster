@@ -1,146 +1,141 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
-import StatsBar from '../components/StatsBar.astro';
-import FeatureCard from '../components/FeatureCard.astro';
-
-const featureIcons = {
-  brain: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M7.5 7.5A3 3 0 0110 4h4a3 3 0 013 3.5 3 3 0 012 2.83V13a3 3 0 01-2 2.83A3 3 0 0117 19h-2m-6 0H7a3 3 0 01-3-3v-2.67A3 3 0 016 11V9.33A3 3 0 017.5 7.5z"/></svg>`,
-  shield: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 5-3.5 9-7 9s-7-4-7-9V7l7-4z"/></svg>`,
-  rocket: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4m0 0l3-3a8 8 0 004-7V5l-2-2h-2a8 8 0 00-7 4l-3 3 3 3m4 4l3 3"/></svg>`,
-  chart: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19h16M7 15v-4m5 4V9m5 6V5"/></svg>`,
-  users: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20v-2a3 3 0 00-3-3H6a3 3 0 00-3 3v2m18 0v-2a3 3 0 00-2-2.82M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 6a3 3 0 01-2-2.82A3 3 0 1014 7"/></svg>`,
-  globe: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="#00D9FF"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.5 0 4.5-4 4.5-9S14.5 3 12 3 7.5 7 7.5 12 9.5 21 12 21zm0 0c3.866 0 7-4.03 7-9s-3.134-9-7-9-7 4.03-7 9 3.134 9 7 9z"/></svg>`,
-};
-
-const stats = [
-  { value: '24/7', label: 'Operations' },
-  { value: '50+', label: 'AI Agents' },
-  { value: '99.9%', label: 'Uptime' },
-];
-
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Sodmaster Autonomous Corporation',
-  url: 'https://sodmaster.online',
-  logo: 'https://sodmaster.online/favicon.svg',
-  sameAs: [
-    'https://twitter.com/sodmaster',
-    'https://www.linkedin.com/company/sodmaster',
-    'https://github.com/sodmaster111',
-  ],
-  description:
-    'Sodmaster is the first autonomous AI corporation with a multi-agent operating system delivering enterprise-grade reliability and growth.',
-  foundingDate: '2024-01-01',
-};
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
 ---
-<Layout
-  title="Sodmaster | The World's First Autonomous AI Corporation"
-  description="50+ specialized AI agents working 24/7 to build, operate, and scale a fully autonomous enterprise platform."
-  structuredData={structuredData}
+
+<Layout 
+  title="Sodmaster - World's First Autonomous AI Corporation"
+  description="50+ specialized AI agents working 24/7 to build, operate, and scale a fully autonomous business"
 >
-  <Hero
-    title="The World's First Autonomous AI Corporation"
-    subtitle="50+ specialized AI agents working 24/7 to build, operate, and scale a fully autonomous business"
-    primaryCta={{ label: 'Explore Our Technology', href: '/technology' }}
-    secondaryCta={{ label: 'Start Your Subscription', href: '/pricing' }}
-  />
-
-  <StatsBar stats={stats} />
-
-  <section>
-    <div class="container">
-      <h2 class="section-title">Enterprise Automation without Compromise</h2>
-      <p class="section-subtitle">
-        Sodmaster orchestrates autonomous AI teams across engineering, growth, finance, and operations, enabling a fully self-running
-        corporation that delivers measurable outcomes with zero downtime.
-      </p>
-      <div class="grid grid-3">
-        <FeatureCard
-          icon={featureIcons.brain}
-          title="Autonomous Intelligence"
-          description="CrewAI-powered multi-agent swarms coordinate development, deployment, and optimization without human intervention."
-        />
-        <FeatureCard
-          icon={featureIcons.shield}
-          title="Zero-Trust Security"
-          description="Continuous threat modeling, encrypted data pipelines, and compliance automation keep every workflow secure."
-        />
-        <FeatureCard
-          icon={featureIcons.rocket}
-          title="Rapid Innovation"
-          description="Weekly product releases executed autonomously with integrated QA, canary deployments, and telemetry-driven feedback."
-        />
-        <FeatureCard
-          icon={featureIcons.chart}
-          title="Live Intelligence"
-          description="Unified dashboards stream API volume, revenue, and uptime metrics in real-time across departments."
-        />
-        <FeatureCard
-          icon={featureIcons.users}
-          title="Specialized Crews"
-          description="Dedicated AI departments for DevOps, Finance, Marketing, and Support collaborate through shared protocols."
-        />
-        <FeatureCard
-          icon={featureIcons.globe}
-          title="Global Scale"
-          description="Multi-cloud distribution, blockchain-native treasury, and localized AI agents ensure resilience worldwide."
-        />
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="container">
-      <h2 class="section-title">Technology Stack</h2>
-      <p class="section-subtitle">Sodmaster integrates proven enterprise technologies with advanced autonomous orchestration.</p>
-      <div class="logo-grid">
-        <span class="logo-item">Python</span>
-        <span class="logo-item">FastAPI</span>
-        <span class="logo-item">CrewAI</span>
-        <span class="logo-item">OpenAI</span>
-        <span class="logo-item">TON</span>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="container cta">
-      <div class="glass-card cta-card">
-        <h2>Join the AI Revolution</h2>
-        <p>
-          Partner with the first autonomous corporation to unlock continuous innovation, resilient operations, and compounding growth for
-          your enterprise.
+  <Header />
+  
+  <!-- Hero Section -->
+  <section class="relative pt-32 pb-20 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-purple/20 via-transparent to-brand-blue/20"></div>
+    
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="text-center max-w-4xl mx-auto">
+        <div class="inline-flex items-center gap-2 bg-white/5 backdrop-blur px-4 py-2 rounded-full text-sm mb-8 border border-white/10">
+          <Icon name="heroicons:sparkles-solid" class="w-4 h-4 text-brand-blue" />
+          <span>World's First Autonomous AI Corporation</span>
+        </div>
+        
+        <h1 class="text-6xl md:text-7xl font-display font-black mb-6 leading-tight">
+          Building the Future of
+          <span class="bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent"> Autonomous Business</span>
+        </h1>
+        
+        <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+          50+ specialized AI agents working 24/7 across all departments - from engineering to finance to marketing. Zero human intervention required.
         </p>
-        <div class="button-row">
-          <a class="gradient-button" href="/contact">Book an Executive Briefing</a>
-          <a class="ghost-button" href="/pricing">View Pricing Tiers</a>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/technology" class="px-8 py-4 bg-gradient-to-r from-brand-purple to-brand-blue rounded-full font-semibold text-lg hover:scale-105 transition shadow-xl shadow-brand-purple/50">
+            Explore Technology
+          </a>
+          <a href="/pricing" class="px-8 py-4 bg-white/5 backdrop-blur rounded-full font-semibold text-lg hover:bg-white/10 transition border border-white/10">
+            View Pricing
+          </a>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Stats Bar -->
+  <section class="py-16 border-y border-white/5">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div>
+          <div class="text-4xl font-bold text-brand-purple mb-2">50+</div>
+          <div class="text-gray-400">AI Agents Active</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold text-brand-blue mb-2">99.9%</div>
+          <div class="text-gray-400">System Uptime</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold text-brand-purple mb-2">24/7</div>
+          <div class="text-gray-400">Autonomous Ops</div>
+        </div>
+        <div>
+          <div class="text-4xl font-bold text-brand-blue mb-2">3</div>
+          <div class="text-gray-400">Blockchains</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="py-32">
+    <div class="container mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-20">
+        <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">
+          Autonomous Intelligence at Scale
+        </h2>
+        <p class="text-xl text-gray-400">
+          Every department powered by specialized AI agents with deep expertise
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-purple/50 transition group">
+          <Icon name="heroicons:cpu-chip" class="w-12 h-12 text-brand-purple mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Multi-Agent Architecture</h3>
+          <p class="text-gray-400">CrewAI-powered coordination between specialized agents with hierarchical task delegation</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-blue/50 transition group">
+          <Icon name="heroicons:shield-check" class="w-12 h-12 text-brand-blue mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Enterprise Security</h3>
+          <p class="text-gray-400">CISO-AI manages threat detection, compliance, and data protection 24/7</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-purple/50 transition group">
+          <Icon name="heroicons:currency-dollar" class="w-12 h-12 text-brand-purple mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Multi-Chain Treasury</h3>
+          <p class="text-gray-400">CFO-AI manages BTC, ETH, and TON wallets with automated risk management</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-blue/50 transition group">
+          <Icon name="heroicons:code-bracket" class="w-12 h-12 text-brand-blue mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Continuous Development</h3>
+          <p class="text-gray-400">CTO-AI orchestrates DevOps, Backend, and Frontend units for rapid iteration</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-purple/50 transition group">
+          <Icon name="heroicons:chart-bar" class="w-12 h-12 text-brand-purple mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Growth Automation</h3>
+          <p class="text-gray-400">CMO-AI drives SEO, content creation, and social media engagement autonomously</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-blue/50 transition group">
+          <Icon name="heroicons:cog" class="w-12 h-12 text-brand-blue mb-6 group-hover:scale-110 transition" />
+          <h3 class="text-2xl font-bold mb-4">Operational Excellence</h3>
+          <p class="text-gray-400">COO-AI optimizes workflows, manages customer success, and ensures quality</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-32 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-brand-purple/20 to-brand-blue/20"></div>
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="text-center max-w-3xl mx-auto">
+        <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">
+          Join the AI Revolution
+        </h2>
+        <p class="text-xl text-gray-300 mb-12">
+          Be part of the first fully autonomous AI corporation
+        </p>
+        <a href="/pricing" class="inline-block px-8 py-4 bg-white text-brand-dark rounded-full font-semibold text-lg hover:scale-105 transition shadow-2xl">
+          Start Your Subscription
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
 </Layout>
-
-<style>
-  .cta-card {
-    display: grid;
-    gap: 20px;
-    text-align: center;
-    padding: 64px;
-    background: radial-gradient(circle at 0% 0%, rgba(102, 126, 234, 0.25), transparent 60%),
-      radial-gradient(circle at 100% 0%, rgba(0, 217, 255, 0.25), transparent 60%),
-      var(--color-surface);
-  }
-
-  .cta-card p {
-    margin: 0;
-    color: var(--color-muted);
-    font-size: 1.05rem;
-  }
-
-  .cta {
-    display: flex;
-    justify-content: center;
-  }
-</style>
