@@ -3,9 +3,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        'sodmaster-purple': '#667eea',
-        'sodmaster-pink': '#764ba2',
+        'brand-dark': '#0A0E27',
+        'brand-purple': '#667eea',
+        'brand-blue': '#00D9FF',
+        'brand-gray': '#1a1f36',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'sans-serif'],
       }
     }
   }
-};
+}
