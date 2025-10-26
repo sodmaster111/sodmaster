@@ -1,0 +1,57 @@
+/* Tailwind CSS Corporate Theme for Sodmaster */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --brand-dark: #0A0E27;
+  --brand-purple: #667eea;
+  --brand-blue: #00D9FF;
+  --brand-gray: #1a1f36;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--brand-dark);
+  color: white;
+  line-height: 1.6;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand-purple), var(--brand-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--brand-purple);
+  transform: translateY(-5px);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--brand-purple), var(--brand-blue));
+  padding: 14px 32px;
+  border-radius: 9999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-gradient:hover {
+  transform: scale(1.05);
+}
