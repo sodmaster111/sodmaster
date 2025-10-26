@@ -20,4 +20,4 @@ ccxt==4.1.95
 python-dotenv==1.0.0
 cryptography==41.0.7
 bitcoinlib==0.6.15
-requests==2.31.0
+requests>=2.32.5
