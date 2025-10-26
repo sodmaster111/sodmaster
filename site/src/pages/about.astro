@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Sodmaster Autonomous Corporation',
+  description: 'Overview, mission, vision, and values for the first autonomous AI corporation.',
+  url: 'https://sodmaster.online/about',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Sodmaster Autonomous Corporation',
+    missionStatement:
+      'To pioneer autonomous corporate intelligence by creating the first fully self-operating AI corporation',
+    foundingDate: '2024-01-01',
+    founder: {
+      '@type': 'Organization',
+      name: 'CrewAI Consortium',
+    },
+  },
+};
+---
+<Layout
+  title="About Sodmaster | Autonomous AI Corporation Overview"
+  description="Discover Sodmaster's mission, vision, and values as the first fully autonomous AI corporation operating at enterprise scale."
+  structuredData={structuredData}
+>
+  <section id="overview">
+    <div class="container">
+      <h1 class="section-title">Company Overview</h1>
+      <p class="section-subtitle">
+        Sodmaster is engineered from inception as an autonomous enterprise, combining AI-native departments, blockchain-based treasury
+        systems, and multi-agent governance to run a corporation without human intervention.
+      </p>
+      <div class="grid grid-2 overview-grid">
+        <div class="glass-card">
+          <h2>Mission</h2>
+          <p>
+            To pioneer autonomous corporate intelligence by creating the first fully self-operating AI corporation capable of executing
+            strategic, operational, and financial decisions in real time.
+          </p>
+        </div>
+        <div class="glass-card">
+          <h2>Vision</h2>
+          <p>
+            A future where AI corporations collaborate with human businesses to accelerate innovation, unlock new value chains, and
+            deliver resilient global infrastructure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h3>Concept Formation</h3>
+          <span>Q2 2023</span>
+          <p>Research collective initiates the concept of a fully autonomous corporation leveraging CrewAI multi-agent systems.</p>
+        </div>
+        <div class="timeline-item">
+          <h3>Architecture Blueprint</h3>
+          <span>Q3 2023</span>
+          <p>Core architecture defined across DevOps, Finance, Marketing, and Support crews with blockchain-native treasury controls.</p>
+        </div>
+        <div class="timeline-item">
+          <h3>Autonomous Launch</h3>
+          <span>Q1 2024</span>
+          <p>Production deployment of 50+ AI agents operating under a federated governance protocol with 99.9% SLA.</p>
+        </div>
+        <div class="timeline-item">
+          <h3>Enterprise Expansion</h3>
+          <span>Q3 2024</span>
+          <p>Activation of enterprise partnerships, multi-chain payment rails, and real-time telemetry dashboards.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Core Values</h2>
+      <div class="grid grid-3">
+        <div class="glass-card value-card">
+          <h3>Innovation</h3>
+          <p>Relentlessly exploring new autonomous strategies to compound value and accelerate product velocity.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Transparency</h3>
+          <p>Observable operations, telemetry-rich reporting, and open governance models for enterprise trust.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Autonomy</h3>
+          <p>Every department is AI-directed, enabling precise execution without human bottlenecks.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Security</h3>
+          <p>Zero-trust architecture, continuous compliance, and adversarial testing across every system.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Excellence</h3>
+          <p>Enterprise SLAs, rigorous QA, and customer-first thinking embedded into each agent protocol.</p>
+        </div>
+        <div class="glass-card value-card">
+          <h3>Collaboration</h3>
+          <p>Human partners gain access to a co-pilot that continuously ships, measures, and iterates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .overview-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .value-card h3 {
+    margin-bottom: 12px;
+  }
+</style>

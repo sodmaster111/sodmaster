@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: 'Sodmaster Technology Stack',
+  description: 'Comprehensive overview of the autonomous technology stack powering Sodmaster.',
+  url: 'https://sodmaster.online/technology',
+  author: {
+    '@type': 'Organization',
+    name: 'Sodmaster Autonomous Corporation',
+  },
+};
+---
+<Layout
+  title="Technology | Sodmaster Autonomous Stack"
+  description="Dive into Sodmaster’s CrewAI architecture, multi-agent orchestration, and integrated API platform."
+  structuredData={structuredData}
+>
+  <section id="stack">
+    <div class="container">
+      <h1 class="section-title">Tech Stack Overview</h1>
+      <p class="section-subtitle">
+        Sodmaster merges proven enterprise frameworks with autonomous orchestration to deliver reliability, speed, and visibility across
+        every business function.
+      </p>
+      <div class="grid grid-2 tech-grid">
+        <div class="glass-card">
+          <h2>Application Layer</h2>
+          <ul>
+            <li>Python 3.11 + FastAPI for high-performance APIs</li>
+            <li>PostgreSQL + Redis for stateful agent memory and caching</li>
+            <li>TON, Ethereum, and Bitcoin integrations for treasury automation</li>
+          </ul>
+        </div>
+        <div class="glass-card">
+          <h2>Autonomy Layer</h2>
+          <ul>
+            <li>CrewAI orchestrating 50+ agents across Dev, Ops, Finance, and Growth</li>
+            <li>OpenAI GPT-4.1 and function-calling pipelines for reasoning and execution</li>
+            <li>Observability mesh with Prometheus, Grafana, and GA4 telemetry</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="crewai">
+    <div class="container">
+      <h2 class="section-title">CrewAI Architecture</h2>
+      <div class="glass-card architecture">
+        <p>
+          Sodmaster’s CrewAI topology organizes agents into specialized squads with defined protocols, shared context windows, and
+          zero-copy data exchange. Each squad operates on mission-critical workflows managed by the Strategic Command unit.
+        </p>
+        <ul>
+          <li>Federated governance: executive AI layer coordinates departmental directives</li>
+          <li>Shared context fabric: vectorized knowledge base accessible across agents</li>
+          <li>Resilient scheduling: workload balancers align compute budgets with SLAs</li>
+          <li>Compliance guardrails: policy agents review every action before execution</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Multi-Agent System</h2>
+      <div class="grid grid-3">
+        <div class="glass-card">
+          <h3>Planning Layer</h3>
+          <p>Strategic Commander sets OKRs, orchestrates initiatives, and aligns resources across crews.</p>
+        </div>
+        <div class="glass-card">
+          <h3>Execution Layer</h3>
+          <p>Task-specific agents execute deployments, content, finance, and support workflows with observability feedback.</p>
+        </div>
+        <div class="glass-card">
+          <h3>Assurance Layer</h3>
+          <p>Security and compliance agents validate outputs, perform audits, and coordinate fail-safes in real time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">API Documentation</h2>
+      <div class="glass-card api-card">
+        <p>
+          Access REST and streaming endpoints for embedding Sodmaster capabilities into your enterprise stack. Authentication leverages
+          signed JWT credentials with per-agent scopes.
+        </p>
+        <div class="button-row">
+          <a class="gradient-button" href="https://docs.sodmaster.online/api">View API Docs</a>
+          <a class="ghost-button" href="mailto:hello@sodmaster.online">Request Integration Support</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .tech-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 10px;
+    color: var(--color-muted);
+  }
+
+  .architecture {
+    display: grid;
+    gap: 18px;
+  }
+
+  .api-card {
+    display: grid;
+    gap: 16px;
+  }
+</style>

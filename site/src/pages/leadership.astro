@@ -1,0 +1,139 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
+
+const executives = [
+  {
+    role: 'CEO-AI',
+    title: 'Chief Executive Officer',
+    name: 'Executive Command Unit',
+    icon: 'heroicons:user-circle',
+    description: 'Strategic Commander orchestrating all corporate operations with autonomous decision-making',
+    responsibilities: [
+      'Strategic vision and planning',
+      'Cross-department coordination',
+      'Resource allocation optimization',
+      'Stakeholder communication'
+    ]
+  },
+  {
+    role: 'CTO-AI',
+    title: 'Chief Technology Officer',
+    name: 'Technology Command Unit',
+    icon: 'heroicons:cpu-chip',
+    description: 'Technology Architect designing and maintaining technical infrastructure',
+    responsibilities: [
+      'Technical infrastructure oversight',
+      'DevOps and CI/CD management',
+      'API development coordination',
+      'Security architecture'
+    ]
+  },
+  {
+    role: 'CFO-AI',
+    title: 'Chief Financial Officer',
+    name: 'Financial Command Unit',
+    icon: 'heroicons:currency-dollar',
+    description: 'Financial Strategist managing multi-chain treasury and revenue optimization',
+    responsibilities: [
+      'Multi-chain treasury management',
+      'Revenue analytics and forecasting',
+      'Cost optimization strategies',
+      'Financial compliance'
+    ]
+  },
+  {
+    role: 'CMO-AI',
+    title: 'Chief Marketing Officer',
+    name: 'Marketing Command Unit',
+    icon: 'heroicons:megaphone',
+    description: 'Growth Engineer driving user acquisition and brand awareness',
+    responsibilities: [
+      'SEO and content strategy',
+      'Social media management',
+      'Growth hacking initiatives',
+      'Community engagement'
+    ]
+  },
+  {
+    role: 'COO-AI',
+    title: 'Chief Operating Officer',
+    name: 'Operations Command Unit',
+    icon: 'heroicons:cog-6-tooth',
+    description: 'Operations Optimizer ensuring 24/7 seamless execution',
+    responsibilities: [
+      'Workflow automation',
+      'Quality assurance',
+      'Customer success management',
+      'Process optimization'
+    ]
+  },
+  {
+    role: 'CISO-AI',
+    title: 'Chief Information Security Officer',
+    name: 'Security Command Unit',
+    icon: 'heroicons:shield-check',
+    description: 'Security Guardian protecting data and ensuring compliance',
+    responsibilities: [
+      'Threat detection and response',
+      'Compliance management',
+      'Data protection oversight',
+      'Security auditing'
+    ]
+  }
+];
+---
+
+<Layout 
+  title="Leadership - Sodmaster AI Corporation"
+  description="Meet the AI executives leading the world's first autonomous corporation"
+>
+  <Header />
+  
+  <main class="pt-32 pb-20">
+    <div class="container mx-auto px-6">
+      <div class="text-center max-w-3xl mx-auto mb-20">
+        <h1 class="text-5xl md:text-6xl font-display font-black mb-6">
+          AI Executive Leadership
+        </h1>
+        <p class="text-xl text-gray-400">
+          Our C-Suite of specialized AI agents leading autonomous operations
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        {executives.map((exec) => (
+          <div class="bg-white/5 backdrop-blur p-8 rounded-2xl border border-white/10 hover:border-brand-purple/50 transition">
+            <div class="flex items-start gap-6 mb-6">
+              <div class="w-16 h-16 bg-gradient-to-br from-brand-purple to-brand-blue rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Icon name={exec.icon} class="w-8 h-8" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-brand-purple mb-1">{exec.role}</h2>
+                <p class="text-gray-400">{exec.title}</p>
+              </div>
+            </div>
+            
+            <p class="text-gray-300 mb-6">{exec.description}</p>
+            
+            <div>
+              <h4 class="font-semibold mb-3 text-sm uppercase tracking-wider text-gray-400">Key Responsibilities</h4>
+              <ul class="space-y-2">
+                {exec.responsibilities.map((resp) => (
+                  <li class="flex items-start gap-2 text-sm text-gray-300">
+                    <Icon name="heroicons:check-circle" class="w-5 h-5 text-brand-blue flex-shrink-0 mt-0.5" />
+                    <span>{resp}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

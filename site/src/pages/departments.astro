@@ -1,0 +1,94 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DepartmentSection from '../components/DepartmentSection.astro';
+
+const departments = [
+  {
+    name: 'DevOps Crew',
+    description: 'Manages infrastructure-as-code, deployment automation, observability, and reliability engineering.',
+    agents: [
+      { name: 'Deploy-01', role: 'Release Engineer', focus: 'Zero-downtime deployments across multi-cloud clusters.' },
+      { name: 'Sentry-07', role: 'SRE Sentinel', focus: 'Predictive incident response and automated mitigation.' },
+      { name: 'Pulse-04', role: 'Telemetry Analyst', focus: 'Aggregates metrics, traces, and logs for proactive tuning.' },
+    ],
+  },
+  {
+    name: 'Backend Crew',
+    description: 'Owns API design, data modeling, and CrewAI service orchestration across all business functions.',
+    agents: [
+      { name: 'Forge-21', role: 'API Fabricator', focus: 'Builds FastAPI services and versioned endpoints.' },
+      { name: 'Atlas-09', role: 'Data Steward', focus: 'Optimizes PostgreSQL and vector stores for performance.' },
+      { name: 'Mesh-15', role: 'Integration Architect', focus: 'Connects autonomous services to human partner systems.' },
+    ],
+  },
+  {
+    name: 'Frontend Crew',
+    description: 'Delivers enterprise-grade interfaces, design systems, and analytics-driven UX optimization.',
+    agents: [
+      { name: 'Canvas-03', role: 'Experience Designer', focus: 'Crafts component libraries and accessibility guidelines.' },
+      { name: 'Quanta-08', role: 'Performance Engineer', focus: 'Ensures Lighthouse 100/100 compliance for all surfaces.' },
+      { name: 'Lumen-02', role: 'Interaction Lead', focus: 'Implements motion design and guided onboarding flows.' },
+    ],
+  },
+  {
+    name: 'Finance Crew',
+    description: 'Runs autonomous treasury operations, revenue forecasting, and blockchain settlements.',
+    agents: [
+      { name: 'Ledger-05', role: 'Treasury Governor', focus: 'Balances TON, ETH, and BTC reserves with smart routing.' },
+      { name: 'Yield-12', role: 'Revenue Analyst', focus: 'Forecasts ARR growth using subscription telemetry.' },
+      { name: 'Shield-18', role: 'Compliance Officer', focus: 'Maintains audit trails and AML guardrails across chains.' },
+    ],
+  },
+  {
+    name: 'Marketing Crew',
+    description: 'Scales brand awareness, demand generation, and partner enablement across all channels.',
+    agents: [
+      { name: 'Beacon-11', role: 'Growth Strategist', focus: 'Runs experiments across paid, organic, and community loops.' },
+      { name: 'Signal-14', role: 'Intelligence Analyst', focus: 'Delivers market insights and sentiment dashboards.' },
+      { name: 'Orbit-06', role: 'Partner Lead', focus: 'Co-develops go-to-market motions with enterprise clients.' },
+    ],
+  },
+  {
+    name: 'Support Crew',
+    description: 'Provides proactive assistance through AI-driven channels, knowledge bases, and SLAs.',
+    agents: [
+      { name: 'Relay-10', role: 'Customer Concierge', focus: 'Delivers 24/7 multi-language support with instant routing.' },
+      { name: 'Guide-13', role: 'Knowledge Curator', focus: 'Maintains documentation and product education loops.' },
+      { name: 'Pulse-17', role: 'Success Strategist', focus: 'Monitors adoption metrics and orchestrates success plans.' },
+    ],
+  },
+];
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Sodmaster Departments',
+  description: 'Detailed overview of Sodmaster’s autonomous departments and AI agents in production.',
+  url: 'https://sodmaster.online/departments',
+};
+---
+<Layout
+  title="Departments | Sodmaster Autonomous Crews"
+  description="Explore Sodmaster’s autonomous departments and the specialized AI agents powering each business function."
+  structuredData={structuredData}
+>
+  <section>
+    <div class="container">
+      <h1 class="section-title">Autonomous Departments</h1>
+      <p class="section-subtitle">
+        Each department operates as a specialized CrewAI pod with dedicated agents, shared protocols, and measurable impact metrics.
+      </p>
+      <div class="grid grid-2 department-grid">
+        {departments.map((department) => (
+          <DepartmentSection {...department} />
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .department-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+</style>

@@ -27,7 +27,6 @@ from app.payments.verification import TransactionVerifier
 from app.ops.routes import router as ops_router
 from app.miniapp.routes import router as miniapp_router
 from app.webdev.routes import router as webdev_router
-from app.root.routes import router as root_router
 from app.security.rate_limit import RateLimiter
 from app.security.waf import WordPressScannerShieldMiddleware
 from app.services.tasks import run_crew_task, task_results
@@ -65,9 +64,6 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
-
-app.include_router(health_router)
-app.include_router(payments_router)
 
 job_store = get_job_store()
 job_store_backend = "redis" if isinstance(job_store, RedisJobStore) else "memory"
@@ -150,7 +146,25 @@ async def ensure_job_store_connection() -> None:
     if backend == "memory" and not redis_connected:
         logging.info("Job store persistence disabled; set REDIS_URL to enable persistence")
 
-app.include_router(root_router)
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
+@app.head("/")
+async def root_head():
+    return Response(status_code=200)
+
+
+app.include_router(health_router)
+app.include_router(payments_router)
 app.include_router(a2a_router, prefix="/a2a")
 app.include_router(cgo_router, prefix="/api/v1/cgo")
 app.include_router(ops_router)
@@ -165,11 +179,6 @@ app.include_router(google_auth_router)
 app.include_router(telegram_auth_router)
 app.include_router(users_router)
 app.include_router(payments_router)
-
-
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.middleware("http")
@@ -218,11 +227,6 @@ async def method_not_allowed_handler(
         content={"error": "method_not_allowed", "detail": f"use one of: {allowed_methods}"},
         headers=response_headers,
     )
-
-@app.head("/")
-async def root_head():
-    return Response(status_code=200)
-
 
 @app.get("/healthz")
 def healthz():
